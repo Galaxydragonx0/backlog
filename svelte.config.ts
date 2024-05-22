@@ -10,7 +10,10 @@ const config = {
       prerender: {
         handleHttpError?: 'ignore',
         entries?: Array<'*' | `/${string}`>
-      }
+      },
+		paths: {
+			base: process.argv.includes('dev') ? '' : process.env.BASE_PATH
+		}
     },
     preprocess: sequence([vitePreprocess(), preprocessMeltUI()]),
 }
