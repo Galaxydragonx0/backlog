@@ -7,9 +7,9 @@ on:
 jobs:
   build_site:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: /.svelte-kit
+    # defaults:
+    #   run:
+    #     working-directory: build
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -39,7 +39,7 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           # this should match the `pages` option in your adapter-static options
-          path: '${{ github.event.repository.name }}/build/'
+          path: '_app/'
 
   deploy:
     needs: build_site
