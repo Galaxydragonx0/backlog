@@ -12,6 +12,7 @@
     import { createContextMenu, melt } from '@melt-ui/svelte'
     import SearchShowModal from "../../../../../components/SearchShowModal.svelte";
     import { browser } from "$app/environment";
+    import { base } from '$app/paths';
 
     export let data;
 
@@ -161,7 +162,7 @@
 <!-- search bar -->
 <div class="search-container" style="padding-top: 1.5rem; position:fixed; z-index:10;">
     {#if width >=1200}
-        <a href="/show-list" class="return-button"><Icon class="back-icon" icon="pixelarticons:arrow-left" /><p class="back-text">Back to List <p></a>
+        <a href="{base}/show-list" class="return-button"><Icon class="back-icon" icon="pixelarticons:arrow-left" /><p class="back-text">Back to List <p></a>
     {/if}
     <PageSearch titleGenre="show"/>
 </div>
@@ -186,7 +187,7 @@
 
     <SearchShowModal show={currentShow} windowWidth={width} titleLength={showStrLength} on:addTitle={modalAddToList} bind:showModal />
     {#if width <= 415}
-        <a href="/show-list" class="return-button"><Icon class="back-icon" icon="pixelarticons:arrow-left" /></a>
+        <a href="{base}/show-list" class="return-button"><Icon class="back-icon" icon="pixelarticons:arrow-left" /></a>
     {/if}
 </div>
 
@@ -195,7 +196,7 @@
     {#if currentPage > 1}
         <a
             class="previous-page block"
-            href="/show-list/search/{query}/{currentPage - parseInt('1')}"
+            href="{base}/show-list/search/{query}/{currentPage - parseInt('1')}"
             ><Icon
                 style="font-size:2rem;"
                 icon="emojione-monotone:left-arrow"
@@ -205,7 +206,7 @@
     <p class="page-num block">{currentPage}</p>
     <a
         class="next-page block"
-        href="/show-list/search/{query}/{currentPage + parseInt('1')}"
+        href="{base}/show-list/search/{query}/{currentPage + parseInt('1')}"
         ><Icon
             style="font-size:2rem;"
             icon="emojione-monotone:right-arrow"

@@ -12,6 +12,7 @@
   import ModalTwo from "../../components/ModalTwo.svelte";
   import { createContextMenu, melt, createTooltip } from "@melt-ui/svelte";
   import { fade, blur } from "svelte/transition";
+  import { base } from '$app/paths';
 
   export let data;
 
@@ -290,9 +291,9 @@
 <div class="ovr-container">
   <div class="genre-container">
     {#if width >= 1200}
-      <a href="/list-menu" class="return-button"><Icon class="back-icon" icon="pixelarticons:arrow-left" /><p class="back-text">Back to Menu <p></a>
+      <a href="{base}/list-menu" class="return-button"><Icon class="back-icon" icon="pixelarticons:arrow-left" /><p class="back-text">Back to Menu <p></a>
     {:else if width < 1200}
-    <a href="/list-menu" class="return-button"><Icon class="back-icon" icon="pixelarticons:arrow-left" /></a>
+    <a href="{base}/list-menu" class="return-button"><Icon class="back-icon" icon="pixelarticons:arrow-left" /></a>
     {/if}
     <h1 class="genre">My</h1>
     <h1 class="genre">Movies</h1>
@@ -385,16 +386,16 @@
     {#if data.api_key == "00000000-0000-0000-0000-000000000000" && (guestMovieListItems?.length == 0 || !guestMovieListItems)}
       <div class="empty-container">
         <p class="message" style="text-align: center;">I know cinema is dead but creating lists aren't</p>
-        <a class="search-link" href="/movie-list/search">Try adding some movie here => </a>
+        <a class="search-link" href="{base}/movie-list/search">Try adding some movie here => </a>
       </div>
     {:else if (movieListItems?.length || !movieListItems) == 0 && data.api_key}
       <div class="empty-container">
         <p class="message" style="text-align: center;">I know cinema is dead but creating lists aren't</p>
-        <a class="search-link" href="/movie-list/search">Try adding some movie here => </a>
+        <a class="search-link" href="{base}/movie-list/search">Try adding some movie here => </a>
       </div>
     {/if}
   {/if}
-  <a href="/movie-list/search/"
+  <a href="{base}/movie-list/search/"
     ><button class="add-movie"><Icon icon="mdi:plus" /></button></a
   >
 </div>

@@ -12,6 +12,7 @@
   import ModalTwo from "../../components/ModalTwo.svelte";
   import { createContextMenu, melt, createTooltip } from "@melt-ui/svelte";
   import { fade, blur } from "svelte/transition";
+  import { base } from '$app/paths';
 
   export let data;
 
@@ -293,13 +294,13 @@
 <div class="ovr-container">
   <div class="genre-container">
     {#if width >= 1200}
-      <a href="/list-menu" class="return-button"
+      <a href="{base}/list-menu" class="return-button"
         ><Icon class="back-icon" icon="pixelarticons:arrow-left" />
         <p class="back-text">Back to Menu</p>
         <p></p></a
       >
     {/if}
-    <a href="/list-menu" class="return-button"
+    <a href="{base}/list-menu" class="return-button"
       ><Icon class="back-icon" icon="pixelarticons:arrow-left" /></a
     >
     <h1 class="genre">My</h1>
@@ -393,16 +394,16 @@
     {#if data.api_key == "00000000-0000-0000-0000-000000000000" && (guestBookListItems?.length == 0 || !guestBookListItems)}
       <div class="empty-container">
         <p class="message">library's empty right now</p>
-        <a class="search-link" href="/book-list/search">Try adding some books here => </a>
+        <a class="search-link" href="{base}/book-list/search">Try adding some books here => </a>
       </div>
     {:else if (bookListItems?.length || !bookListItems) == 0 && data.api_key}
       <div class="empty-container">
         <p class="message">library's empty right now</p>
-        <a class="search-link" href="/book-list/search">Try adding some books here => </a>
+        <a class="search-link" href="{base}/book-list/search">Try adding some books here => </a>
       </div>
     {/if}
   {/if}
-  <a href="/book-list/search/"
+  <a href="{base}/book-list/search/"
     ><button class="add-movie"><Icon icon="mdi:plus" /></button></a
   >
 </div>

@@ -14,6 +14,7 @@
     import { createContextMenu, melt } from '@melt-ui/svelte'
     import SearchGameModal from "../../../../../components/SearchGameModal.svelte";
     import { browser } from "$app/environment";
+    import { base } from '$app/paths';
     // import EmptyList from "../../../../components/EmptyList.svelte";
 
     export let data;
@@ -169,7 +170,7 @@
 <!-- search bar -->
 <div class="search-container" style="padding-top: 1.5rem; position:fixed; z-index:10;">
     {#if width >=1200}
-        <a href="/game-list" class="return-button"><Icon class="back-icon" icon="pixelarticons:arrow-left" /><p class="back-text">Back to List <p></a>
+        <a href="{base}/game-list" class="return-button"><Icon class="back-icon" icon="pixelarticons:arrow-left" /><p class="back-text">Back to List <p></a>
     {/if}
     <PageSearch titleGenre="game"/>
 </div>
@@ -194,7 +195,7 @@
 
     <SearchGameModal game={currentGame} windowWidth={width} titleLength={gameStrLength} on:addTitle={modalAddToList} bind:showModal />
     {#if width <= 415}
-        <a href="/game-list" class="return-button"><Icon class="back-icon" icon="pixelarticons:arrow-left" /></a>
+        <a href="{base}/game-list" class="return-button"><Icon class="back-icon" icon="pixelarticons:arrow-left" /></a>
     {/if}
 </div>
 
@@ -203,7 +204,7 @@
     {#if currentPage > 1}
         <a
             class="previous-page block"
-            href='/game-list/search/{data.search_query}/{currentPage - parseInt('1')}'
+            href='{base}/game-list/search/{data.search_query}/{currentPage - parseInt('1')}'
             ><Icon
                 style="font-size:2rem;"
                 icon="emojione-monotone:left-arrow"
@@ -213,7 +214,7 @@
     <p class="page-num block">{currentPage}</p>
     <a
         class="next-page block"
-        href="/game-list/search/{data.search_query}/{currentPage + parseInt('1')}"
+        href="{base}/game-list/search/{data.search_query}/{currentPage + parseInt('1')}"
         ><Icon
             style="font-size:2rem;"
             icon="emojione-monotone:right-arrow"

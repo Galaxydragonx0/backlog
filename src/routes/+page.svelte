@@ -1,9 +1,9 @@
 <!-- the first landing page I created with a component -->
 
 <script>
-	import MainMenu from "../components/MainMenu.svelte";
+	import { base } from '$app/paths';
 </script>
-<a href="/list-menu">
+<a href="{base}/list-menu">
 	<div class="container">
 		<h1 class="line-1 site">
 			the backlog

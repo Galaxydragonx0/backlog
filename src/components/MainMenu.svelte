@@ -1,5 +1,5 @@
 <script>
-
+	import { base } from '$app/paths';	
 	let bottomActive = true;
 	let topActive = true;
 	let navigating = false;
@@ -23,7 +23,7 @@
 		}
 			
 	}}>
-		<a href="/list-menu">  <h1 >Lists</h1> </a>
+		<a href="{base}/list-menu">  <h1 >Lists</h1> </a>
 		<p class:topActive>View your lists here</p>
 	</div>
 

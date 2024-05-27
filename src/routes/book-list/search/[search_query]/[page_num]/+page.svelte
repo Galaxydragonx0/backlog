@@ -15,6 +15,7 @@
     import SearchBookModal from "../../../../../components/SearchBookModal.svelte";
     import { browser } from "$app/environment";
     // import EmptyList from "../../../../components/EmptyList.svelte";
+    import { base } from '$app/paths';
 
     export let data;
 
@@ -170,7 +171,7 @@
 <!-- search bar -->
 <div class="search-container" style="padding-top: 1.5rem; position:fixed; z-index:10;">
     {#if width >=1200}
-        <a href="/book-list" class="return-button"><Icon class="back-icon" icon="pixelarticons:arrow-left" /><p class="back-text">Back to List <p></a>
+        <a href="{base}/book-list" class="return-button"><Icon class="back-icon" icon="pixelarticons:arrow-left" /><p class="back-text">Back to List <p></a>
     {/if}
     <PageSearch titleGenre="book"/>
 </div>
@@ -195,7 +196,7 @@
 
     <SearchBookModal book={currentBook} windowWidth={width} titleLength={bookStrLength} on:addTitle={modalAddToList} bind:showModal />
     {#if width <= 415}
-        <a href="/book-list" class="return-button"><Icon class="back-icon" icon="pixelarticons:arrow-left" /></a>
+        <a href="{base}/book-list" class="return-button"><Icon class="back-icon" icon="pixelarticons:arrow-left" /></a>
     {/if}
 </div>
 

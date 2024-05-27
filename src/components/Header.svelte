@@ -4,7 +4,7 @@
     import Icon from "@iconify/svelte";
     import Login from "../components/Login.svelte";
     import UserDataStore from "../routes/UserDataStore";
-
+    import { base } from '$app/paths';
     export let formData;
     export let modalPassthrough
     export let viewPassThrough = {};
@@ -31,7 +31,7 @@
 
 <svelte:window bind:innerWidth={width} bind:innerHeight={height} />
 <header style="line-height: normal;">
-    <a class="logo-link" href="/list-menu">
+    <a class="logo-link" href="{base}/list-menu">
         <p class="the">the</p>
         <p class="backlog">Backlog</p>
     </a>

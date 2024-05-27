@@ -11,6 +11,7 @@
   import ModalTwo from "../../components/ModalTwo.svelte";
   import { createContextMenu, melt, createTooltip } from "@melt-ui/svelte";
   import { fade, blur } from "svelte/transition";
+  import { base } from '$app/paths';
 
   export let data;
 
@@ -301,13 +302,13 @@
 <div class="ovr-container">
   <div class="genre-container">
     {#if width >= 1200}
-      <a href="/list-menu" class="return-button"
+      <a href="{base}/list-menu" class="return-button"
         ><Icon class="back-icon" icon="pixelarticons:arrow-left" />
         <p class="back-text">Back to Menu</p>
         <p></p></a
       >
     {:else if width<1200}
-    <a href="/list-menu" class="return-button"
+    <a href="{base}/list-menu" class="return-button"
       ><Icon class="back-icon" icon="pixelarticons:arrow-left" /></a
     >
     {/if}
@@ -405,7 +406,7 @@
           If you add a CW show, you should pay me for this app (I don't judge
           tho)
         </p>
-        <a class="search-link" href="/show-list/search"
+        <a class="search-link" href="{base}/show-list/search"
           >Try adding some shows here =>
         </a>
       </div>
@@ -415,11 +416,11 @@
           If you add a CW show, you should pay me for this app (I don't judge
           tho)
         </p>
-        <a class="search-link" href="/show-list/search">Try adding some shows here => </a>
+        <a class="search-link" href="{base}/show-list/search">Try adding some shows here => </a>
       </div>
     {/if}
   {/if}
-  <a href="/show-list/search/"
+  <a href="{base}/show-list/search/"
     ><button class="add-movie"><Icon icon="mdi:plus" /></button></a
   >
 </div>

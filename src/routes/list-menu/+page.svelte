@@ -8,14 +8,14 @@
 	import { visitCount } from "../VisitedCountStore";
 	import Icon from "@iconify/svelte";
 	import { browser } from "$app/environment";
+	import { base } from '$app/paths';
 
 	let topActive = false;
 	$: showComplete = false;
 
 	// @ts-ignore
-	// @ts-ignore
 	export let data;
-	// @ts-ignore
+
 	// @ts-ignore
 	export let form;
 
@@ -96,7 +96,7 @@
 	/>
 {/if}
 <nav class="grid" id="menu">
-	<a class="menu-item selected" id="title-1" href="/movie-list">
+	<a class="menu-item selected" id="title-1" href="{base}/movie-list">
 		<span class="menu-item-title1">Movies</span>
 		{#if topActive}
 			<span in:fade|global={{ delay: 300, duration: 500 }} class="menu-deco"
@@ -107,24 +107,24 @@
 			>
 		{/if}
 	</a>
-	<a class="menu-item selected" id="title-2" href="/show-list">
+	<a class="menu-item selected" id="title-2" href="{base}/show-list">
 		<span class="menu__item-title">Shows</span>
 		<!-- <span class="menu-deco">|</span>
 		<span class="menu-cta"><span>explore</span> -->
 	</a>
-	<a class="menu-item selected" id="title-3" href="/game-list">
+	<a class="menu-item selected" id="title-3" href="{base}/game-list">
 		<span class="menu__item-title">Games</span>
 		<!-- <span class="menu-deco">|</span>
 		<span class="menu-cta"><span>explore</span> -->
 	</a>
-	<a class="menu-item selected" id="title-4" href="/book-list">
+	<a class="menu-item selected" id="title-4" href="{base}/book-list">
 		<span class="menu__item-title">Books</span>
 		<!-- <span class="menu-deco">|</span>
 		<span class="menu-cta"><span>explore</span></span> -->
 	</a>
 
 	{#if height >= 600}
-		<a href="/complete"
+		<a href="{base}/complete"
 			><button class="comp-portal"
 				><Icon
 					class="down-icon"
@@ -138,7 +138,7 @@
 	{/if}
 
 	{#if width >= 1200}
-		<a href="/complete"
+		<a href="{base}/complete"
 			><button class="comp-portal"
 				>Completed <Icon
 					class="down-icon"

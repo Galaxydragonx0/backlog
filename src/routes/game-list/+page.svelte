@@ -12,6 +12,7 @@
   import ModalTwo from "../../components/ModalTwo.svelte";
   import { createContextMenu, melt, createTooltip } from "@melt-ui/svelte";
   import { fade, blur } from "svelte/transition";
+  import { base } from '$app/paths';
 
   export let data;
 
@@ -293,12 +294,12 @@
 <div class="ovr-container">
   <div class="genre-container">
     {#if width >= 1200}
-      <a href="/list-menu" class="return-button"
+      <a href="{base}/list-menu" class="return-button"
         ><Icon class="back-icon" icon="pixelarticons:arrow-left" />
         <p class="back-text">Back to Menu</p>
         </a>
     {:else if width < 1200}
-    <a href="/list-menu" class="return-button"><Icon class="back-icon" icon="pixelarticons:arrow-left" /></a
+    <a href="{base}/list-menu" class="return-button"><Icon class="back-icon" icon="pixelarticons:arrow-left" /></a
     >
     {/if}
     <h1 class="genre">My</h1>
@@ -392,16 +393,16 @@
     {#if data.api_key == "00000000-0000-0000-0000-000000000000" && guestGameListItems?.length == 0 || !guestGameListItems}
       <div class="empty-container">
         <p class="message">cat got your analog stick ??</p>
-        <a class="search-link" href="/game-list/search">Try adding some games here => </a>
+        <a class="search-link" href="{base}/game-list/search">Try adding some games here => </a>
       </div>
     {:else if gameListItems?.length || !gameListItems == 0 && data.api_key}
       <div class="empty-container">
         <p class="message">cat got your analog stick ??</p>
-        <a class="search-link" href="/game-list/search">Try adding some games here => </a>
+        <a class="search-link" href="{base}/game-list/search">Try adding some games here => </a>
       </div>
     {/if}
   {/if}
-  <a href="/game-list/search/"
+  <a href="{base}/game-list/search/"
     ><button class="add-movie"><Icon icon="mdi:plus" /></button></a
   >
 </div>
