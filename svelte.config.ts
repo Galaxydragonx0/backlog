@@ -6,7 +6,6 @@ import adapter from '@sveltejs/adapter-static';
 
 const config = {
     kit: {
-      appDir: 'app',
       adapter: adapter(),
       prerender: {
         handleHttpError?: 'ignore',
