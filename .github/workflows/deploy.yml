@@ -39,7 +39,7 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           # this should match the `pages` option in your adapter-static options
-          path: '.svelte-kit/output/client/_app/'
+          path: '.svelte-kit/output/client/app/'
 
   deploy:
     needs: build_site
