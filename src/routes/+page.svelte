@@ -17,9 +17,11 @@
 		font-family: "header-font";
 		src: url('../../static/fonts/PublicPixel.ttf');
 	}
+
+
 	.container{
 		height: 100vh;
-		width: 100vw;
+		/* width: 100vw; */
 		background-color: #181818;
 	}
 

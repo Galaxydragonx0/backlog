@@ -209,6 +209,7 @@
 			padding: 5px;
 			width: 100%;
 			border-radius: 10px;
+			font-family: "DotGothic16", sans-serif;
 		}
 
 		button :global(.remove-icon) {

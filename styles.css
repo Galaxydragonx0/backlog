@@ -1,15 +1,14 @@
 
-html, body
+:global(html, body)
 {
 	height:100%;
 }
 
-body
-{
+:global(body){
 	margin: 0;
-	/* overflow-y: hidden; */
 }
 
-a{
+
+:global(a){
 	text-decoration: none;
 }

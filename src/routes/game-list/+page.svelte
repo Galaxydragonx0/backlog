@@ -419,6 +419,7 @@
   }
 
   .add-movie {
+    cursor: pointer;
     color: #181818;
     font-size: 2rem;
     background-color: #5755FE;

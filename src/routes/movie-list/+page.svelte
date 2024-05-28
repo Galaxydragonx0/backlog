@@ -411,7 +411,9 @@
     src: url("../../static/fonts/PublicPixel.ttf");
   }
 
+
   .add-movie {
+    cursor: pointer;
     color: #181818;
     font-size: 2rem;
     background-color: springgreen;

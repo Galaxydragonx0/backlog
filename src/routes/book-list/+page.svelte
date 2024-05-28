@@ -420,6 +420,7 @@
   }
 
   .add-movie {
+    cursor: pointer;
     color: #181818;
     font-size: 2rem;
     background-color: #f1dd00;

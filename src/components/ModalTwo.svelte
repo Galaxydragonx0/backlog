@@ -395,6 +395,7 @@
 			border-radius: 10px;
 			color: green;
 			font-weight: bold;
+			font-family: "DotGothic16", sans-serif;
 		}
 
 		.remove-button {
@@ -406,6 +407,7 @@
 			background-color: #040f41;
 			padding: 5px;
 			border-radius: 10px;
+			font-family: "DotGothic16", sans-serif;
 		}
 
 		button :global(.remove-icon) {
