@@ -1,7 +1,6 @@
 <script>
   // @ts-nocheck
   import { browser } from "$app/environment";
-  import emblaCarouselSvelte from "embla-carousel-svelte";
   import { movieList, guestMovieList } from "../MovieStore";
   import UserDataStore from "../UserDataStore";
   // import { addToast } from "../../components/Toaster.svelte";

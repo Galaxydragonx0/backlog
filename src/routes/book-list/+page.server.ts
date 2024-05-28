@@ -27,11 +27,11 @@ export const load = async ({locals}) => {
     .then((requestResponse) => {
         if (requestResponse.status == 401 || requestResponse.status == 403)
         {
-            throw error(requestResponse.status, "You are not allowed to do this ngl");
+            error(requestResponse.status, "You are not allowed to do this ngl");
         }
         if(requestResponse.status >= 500)
         {
-            throw error(500,"The server went to touch some grass, bro is better than us fr")
+            error(500,"The server went to touch some grass, bro is better than us fr");
         }
         if (requestResponse.status == 200){
             return requestResponse.json();

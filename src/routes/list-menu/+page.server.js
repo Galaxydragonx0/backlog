@@ -115,7 +115,7 @@ export const actions ={
             maxAge: 60 * 60 * 24 * 30,
         })
 
-        throw redirect(303, "/list-menu");
+        redirect(303, "/list-menu");
     },
 
 
@@ -193,7 +193,7 @@ export const actions ={
 
 
 
-        throw redirect(303, "/list-menu");
+        redirect(303, "/list-menu");
     }, 
 
     logout: async({cookies}) => {
@@ -205,7 +205,7 @@ export const actions ={
             api_key = '';
 
             // redirect to list menu with modal closed
-            throw redirect(303, '/list-menu')
+            redirect(303, '/list-menu');
     }
 
 }
