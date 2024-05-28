@@ -82,7 +82,7 @@
     function addToList(book) {
         book['title_genre'] = 'book'
         bookList.update((data) => {
-            if ($bookList.length == 0) {
+            if ($bookList?.length == 0 || !$bookList) {
                 if(localStorage.getItem("savedBooks")){
                     let currentBooks = localStorage.getItem("savedBooks");
                     return [book, ... JSON.parse(currentBooks)]

@@ -79,7 +79,7 @@
     function addToList(show) {
         show['title_genre'] = 'show';
         showList.update((data) => {
-            if ($showList.length == 0) {
+            if ($showList?.length == 0 || !$showList) {
                 let currentShows = localStorage.getItem("savedShows");
                 return [show, ... JSON.parse(currentShows)]
             }

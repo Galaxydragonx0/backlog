@@ -82,7 +82,7 @@
     function addToList(game) {
         game['title_genre'] = 'game'
         gameList.update((data) => {
-            if ($gameList.length == 0) {
+            if ($gameList?.length == 0 || !$gameList) {
                 if(localStorage.getItem("savedGames")){
                     let currentGames = localStorage.getItem("savedGames");
                     return [game, ... JSON.parse(currentGames)]

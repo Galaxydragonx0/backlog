@@ -91,7 +91,7 @@
     function addToList(movie) {
         movie['title_genre'] = 'movie';
         movieList.update((data) => {
-            if ($movieList.length == 0) {
+            if ($movieList?.length == 0 || !$movieList) {
                 let currentMovies = localStorage.getItem("savedMovies");
                 return [movie, ... JSON.parse(currentMovies)]
             }

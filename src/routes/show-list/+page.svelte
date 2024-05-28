@@ -608,7 +608,7 @@
     .ovr-container {
       background: #181818;
       padding: 2rem 6.7rem;
-      overflow-y: hidden;
+      overflow: auto;
       height: calc(100vh - 64px);
     }
 
