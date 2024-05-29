@@ -56,7 +56,9 @@
 
   // if the key is a guest key we store it using only the localStorage
   function guestAddToList(movie){
+    console.log("the guest one is triggered, outside if")
         if (data.userData == '00000000-0000-0000-0000-000000000000'){
+            console.log("the guest one is triggered, inside if")
             let currentMovies = []
             movie['title_genre'] = 'movie';
             if(browser){
@@ -90,6 +92,7 @@
 
     // we use the update function to let the store be updated
     function addToList(movie) {
+        console.log("the logged in one is triggered")
         movie['title_genre'] = 'movie';
         movieList.update((data) => {
             if ($movieList?.length == 0 || !$movieList) {
