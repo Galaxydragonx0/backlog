@@ -19,6 +19,8 @@
 	// @ts-ignore
 	export let form;
 
+	console.log("this is the server data", data)
+
 	if (browser) {
 		// @ts-ignore
 		// let emailExists = window.localStorage.getItem('email');
@@ -42,6 +44,8 @@
 			UserDataStore.update((data) => {
 				return { user_email: user_email, api_key: api_key };
 			});
+
+			console.log("this is the datastore", $UserDataStore)
 		}
 	}
 
