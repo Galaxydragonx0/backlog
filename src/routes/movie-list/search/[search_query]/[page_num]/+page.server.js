@@ -36,7 +36,7 @@ export async function load({locals  , params }) {
         userData = locals?.user.apiKey;
     }
     else{
-        userData = env.guest_api_key;
+        userData = process.env.guest_api_key;
     } 
    
      

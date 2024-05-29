@@ -14,11 +14,11 @@ export async function load({locals  , params }) {
     const { search_query, page_num } = params;
 
     if(parseInt(page_num) == 1){
-        url = `https://www.googleapis.com/books/v1/volumes?q=${search_query}&startIndex=0&maxResults=14&key=${env.book_api}`
+        url = `https://www.googleapis.com/books/v1/volumes?q=${search_query}&startIndex=0&maxResults=14&key=${process.env.book_api}`
     }
     else{
         searchOffset = (parseInt(page_num) - 1) * 15
-        url = `https://www.googleapis.com/books/v1/volumes?q=${search_query}&startIndex=${searchOffset}&maxResults=14&key=${env.book_api}`
+        url = `https://www.googleapis.com/books/v1/volumes?q=${search_query}&startIndex=${searchOffset}&maxResults=14&key=${process.env.book_api}`
     }
 
     const resp = await fetch(url)

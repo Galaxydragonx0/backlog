@@ -17,7 +17,7 @@ export async function load({locals  , params }) {
         searchOffset = (parseInt(page_num) - 1) * 15
     }
 
-    const url = `http://www.giantbomb.com/api/games/?api_key=${env.game_api_key}&limit=15&offset=${searchOffset}&filter=name:${search_query}&format=json&field_list=original_release_date,id,genres,api_detail_url,name,image,deck&page=${page_num},`
+    const url = `http://www.giantbomb.com/api/games/?api_key=${process.env.game_api_key}&limit=15&offset=${searchOffset}&filter=name:${search_query}&format=json&field_list=original_release_date,id,genres,api_detail_url,name,image,deck&page=${page_num},`
     const resp = await fetch(url)
     const data = await resp.json()
 

@@ -12,7 +12,7 @@ export const load = async ({locals}) => {
 
 // const fetchUserMovies = async () => {
 
-    if(!locals.user?.apiKey) return ({api_key: env.guest_api_key});
+    if(!locals.user?.apiKey) return ({api_key: process.env.guest_api_key});
     
 
     const url = `${env.server_url}/getMovies`
