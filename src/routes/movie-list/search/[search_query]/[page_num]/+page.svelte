@@ -21,6 +21,7 @@
     $: currentMovie = {};
     $: showModal = false;
 
+    console.log("this is the server data", data)
     // context menu
     const {
         elements: { menu, item, trigger, arrow }
