@@ -76,7 +76,7 @@ on:emblaScrollNext={scrollNext}
 
 
   .embla__slide {
-    height: 100vh;
+    height: 100dvh;
     justify-content: center;
     align-items: center;
     display: grid;

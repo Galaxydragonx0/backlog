@@ -5,9 +5,8 @@
     // import Header from "../../../../components/Header.svelte";
     import Title from "../../../../../components/Title.svelte";
     import PageSearch from "../../../../../components/PageSearch.svelte";
-    import {bookList, guestBookList} from "../../../../BookStore";
-    import UserDataStore from "../../../../UserDataStore";
-    import { onDestroy } from "svelte";
+    import { authUser } from "$lib/firebase/auth";
+    import { addItem } from "$lib/firebase/db";
     // import { addToast } from "../../../../../components/Toaster.svelte";
     import { createToaster } from "@melt-ui/svelte";
     import {page} from '$app/stores';
@@ -36,121 +35,15 @@
     $: query = data.search_query;
 
 
-    let modalAddToList = (event) =>{
-
-        if(data.userData == '00000000-0000-0000-0000-000000000000'){
-            guestAddToList(event.detail);
-        }
-        else{
-            addToList(event.detail);
-        }
+    let modalAddToList = (event) => {
+        addToList(event.detail);
     }
 
-
-
-//   if (data.userData == '00000000-0000-0000-0000-000000000000'){
-//         let localExists;
-//         if(browser)localExists = localStorage.getItem('guestBooks');
-//         if(localExists){
-//             data.bookArray = localStorage.getItem('guestBooks');
-//         }
-//     }
-
-  // if the key is a guest key we store it using only the localStorage
-  function guestAddToList(book){
-        if (data.userData == '00000000-0000-0000-0000-000000000000'){
-            let currentBooks = []
-            book['title_genre'] = 'book'
-            if(browser){
-                // guestBookList.update((currentData) => {
-                //     return [book, ...currentData];
-                // })
-                if(localStorage.getItem('guestBooks')){
-                    currentBooks = JSON.parse(localStorage.getItem('guestBooks'));
-                    currentBooks.push(book);
-                    localStorage.setItem('guestBooks', JSON.stringify(currentBooks))
-                }
-                else{
-                    localStorage.setItem('guestBooks', JSON.stringify([book]))
-                }
-
-            }
-        }
-  }
-
-    // we use the update function to let the store be updated
+    // Add the selected search result to the user's Firestore book list.
     function addToList(book) {
-        book['title_genre'] = 'book'
-        bookList.update((data) => {
-            if ($bookList?.length == 0 || !$bookList) {
-                if(localStorage.getItem("savedBooks")){
-                    let currentBooks = localStorage.getItem("savedBooks");
-                    return [book, ... JSON.parse(currentBooks)]
-                }
-                else{
-                    localStorage.setItem('savedBooks', JSON.stringify(book))
-                    return [book, ... data]
-                }
-            }
-            // const genreKey= 'title_genre';
-            // book[genreKey] = 'book'
-            return [book, ...data];
-        });
-
-
-        //get api key for the user to send request for auth
-        let api_key = "";
-        UserDataStore.subscribe((storeData) => {
-            // check if this exists if not tell the user to login
-            if (storeData.api_key) {
-                api_key = storeData.api_key;
-            } else {
-                // addToast({
-                //     data: {
-                //         title: "Warning",
-                //         description: "Please login to add titles!",
-                //         color: "yellow",
-                //     },
-                //     closeDelay: 5000,
-                //     type: "foreground",
-                // });
-            }
-        });
-
-        // send request to backend
-        const bookListUnsub = bookList.subscribe(async (newTitle) => {
-            const server_endpoint = "http://localhost:8200/books";
-            let res = await fetch(server_endpoint, {
-                method: "POST",
-                body: JSON.stringify(newTitle),
-                headers: {
-                    "Content-type": "applicaiton/json",
-                    Authorization:
-                        "ApiKey " +
-                        `${data.userData}`,
-                },
-            });
-
-            const list_data = await res.json();
-
-            if (res.status >= 400 && res.status < 500) {
-                let update_errors = response?.error;
-
-                // addToast({
-                //     data: {
-                //         title: "Error",
-                //         description: update_errors,
-                //         color: "red",
-                //     },
-                //     closeDelay: 5000,
-                //     type: "foreground",
-                // });
-            }
-            // this is needs to be error handled and displayed to the user
-            // gets the correct errors already
-        });
-
-        onDestroy(bookListUnsub);
+        if (!$authUser) return;
+        book['title_genre'] = 'book';
+        addItem($authUser.uid, 'books', book);
     }
 
 
@@ -187,11 +80,7 @@
         {/each}
     {/if}
     <div class="context-menu" {...$menu} use:menu>
-        {#if (data.userData == '00000000-0000-0000-0000-000000000000')}
-            <div {...$item} use:item style="color:springgreen; padding-bottom:10px;" on:click={guestAddToList(currentBook)}>Add to List</div>
-        {:else if data.userData != '00000000-0000-0000-0000-000000000000'}
-            <div {...$item} use:item style="color:springgreen; padding-bottom:10px;" on:click={addToList(currentBook)}>Add to List</div>
-        {/if}
+        <div {...$item} use:item style="color:springgreen; padding-bottom:10px;" on:click={addToList(currentBook)}>Add to List</div>
     </div>
 
     <SearchBookModal book={currentBook} windowWidth={width} titleLength={bookStrLength} on:addTitle={modalAddToList} bind:showModal />
@@ -376,7 +265,7 @@
             grid-template-columns: repeat(7, 1fr);
             grid-template-rows: repeat(3, 1fr);
             padding: 2rem 8.7rem;
-            height: calc(100vh - 144px);
+            height: calc(100dvh - 144px);
             padding-top: 7rem;
         }
 

@@ -1,88 +1,12 @@
 <script>
 	import Header from "../../components/Header.svelte";
 	// @ts-ignore
-	// @ts-ignore
-	import { fade, slide } from "svelte/transition";
-	import UserDataStore from "../UserDataStore.js";
-	import { CompletedStore } from "../CompletedTitleStore";
-	import { visitCount } from "../VisitedCountStore";
+	import { fade } from "svelte/transition";
 	import Icon from "@iconify/svelte";
 	import { browser } from "$app/environment";
 	import { base } from '$app/paths';
 
 	let topActive = false;
-	$: showComplete = false;
-
-	// @ts-ignore
-	export let data;
-
-	// @ts-ignore
-	export let form;
-
-	console.log("this is the server data", data)
-
-	if (browser) {
-		// @ts-ignore
-		// let emailExists = window.localStorage.getItem('email');
-		// if(emailExists) data.user_email = emailExists;
-
-		if (
-			!window.localStorage.getItem("completedTitles") &&
-			data.completedListData
-		) {
-			window.localStorage.setItem(
-				"completedTitles",
-				JSON.stringify(data.completedListData),
-			);
-		}
-
-		if (!form?.errors) {
-			let user_email = data.user_email;
-			let api_key = data.api_key;
-			// @ts-ignore
-			// @ts-ignore
-			UserDataStore.update((data) => {
-				return { user_email: user_email, api_key: api_key };
-			});
-
-			console.log("this is the datastore", $UserDataStore)
-		}
-	}
-
-	if (data?.completedListData && $visitCount > 0) {
-		for (let i = 0; i < data?.completedListData.length; i++) {
-			// @ts-ignore
-			CompletedStore.update((currData) => {
-				return [data.completedListData[i], ...currData];
-			});
-		}
-		visitCount.update((data) => {
-			return data++;
-		});
-	}
-
-	/**@type {HTMLDialogElement}*/
-	let dialog;
-
-	// @ts-ignore
-	// @ts-ignore
-	$: if (dialog && showComplete) dialog.showModal();
-
-	// @ts-ignore
-	// @ts-ignore
-	function showModal() {
-		showComplete = true;
-	}
-
-	// @ts-ignore
-
-	function closeModal() {
-		document.querySelector(".complete-grid");
-
-		let compModal = document.getElementsByClassName("completed-grid")[0];
-		compModal.id = "close";
-		showComplete = false;
-	}
 
 	/**@type {number}*/
 	let width;
@@ -92,12 +16,7 @@
 
 <svelte:window bind:innerWidth={width} bind:innerHeight={height} />
 {#if browser}
-	<Header
-		modalPassthrough={data.modalPassthrough}
-		auth_errors={data.auth_errors}
-		formData={form}
-		viewPassThrough={data.viewPassthrough}
-	/>
+	<Header />
 {/if}
 <nav class="grid" id="menu">
 	<a class="menu-item selected" id="title-1" href="{base}/movie-list">
@@ -152,26 +71,6 @@
 		>
 	{/if}
 </nav>
-
-{#if showComplete == true}
-	<!-- svelte-ignore a11y-click-events-have-key-events -->
-	<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-	<dialog
-		bind:this={dialog}
-		class="completed-grid"
-		on:close={() => {
-			closeModal();
-		}}
-		on:click|self={() => {
-			dialog.close();
-		}}
-	>
-		<!-- {#each data.compTitles as title}
-		<p>This the completed div</p>
-		<button id="close">Close Dialog!</button>
-	{/each} -->
-	</dialog>
-{/if}
 
 <style>
 	@import "../../../styles.css";
@@ -244,7 +143,7 @@
 			display: grid;
 			grid-template-columns: repeat(12, 1fr);
 			grid-template-rows: repeat(32, 20px);
-			height: calc(100vh - 95px);
+			height: calc(100dvh - 95px);
 		}
 
 		a {
@@ -299,7 +198,7 @@
 			display: grid;
 			grid-template-columns: repeat(12, 1fr);
 			grid-template-rows: repeat(21, 40px);
-			height: calc(100vh - 95px);
+			height: calc(100dvh - 95px);
 		}
 
 		a {

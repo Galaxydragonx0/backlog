@@ -266,7 +266,7 @@
 			border-radius: 10px;
 			color: wheat;
 			height: 95vh;
-			max-height: calc(100vh - 6rem);
+			max-height: calc(100dvh - 6rem);
 			width: 95vw;
 		}
 

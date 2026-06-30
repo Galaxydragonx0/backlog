@@ -5,9 +5,8 @@
     import Title from "../../../../../components/Title.svelte";
     import Search from "../../../../../components/Search.svelte";
     import PageSearch from "../../../../../components/PageSearch.svelte";
-    import {showList, guestShowList} from "../../../../ShowStore";
-    import UserDataStore from "../../../../UserDataStore";
-    import { onDestroy } from "svelte";
+    import { authUser } from "$lib/firebase/auth";
+    import { addItem } from "$lib/firebase/db";
     // import { addToast } from "../../../../../components/Toaster.svelte";
     import { createContextMenu, melt } from '@melt-ui/svelte'
     import SearchShowModal from "../../../../../components/SearchShowModal.svelte";
@@ -33,115 +32,15 @@
     $: query = data.search_query;
 
 
-    let modalAddToList = (event) =>{
-        if(data.userData == '00000000-0000-0000-0000-000000000000'){
-            guestAddToList(event.detail);
-        }
-        else{
-            addToList(event.detail);
-        }
+    let modalAddToList = (event) => {
+        addToList(event.detail);
     }
 
-
-//   if (data.userData == '00000000-0000-0000-0000-000000000000'){
-//         let localExists;
-//         if(browser)localExists = localStorage.getItem('guestShows');
-//         if(localExists){
-//             data.showArray = localStorage.getItem('guestShows');
-//         }
-//     }
-
-  // if the key is a guest key we store it using only the localStorage
-  function guestAddToList(show){
-        if (data.userData == '00000000-0000-0000-0000-000000000000'){
-            let currentShows = []
-            show['title_genre'] = 'show';
-            if(browser){
-                
-                // guestShowList.update((currentData) => {
-                //     return [show, ...currentData];
-                // })
-
-                if(localStorage.getItem('guestShows')){
-                    currentShows = JSON.parse(localStorage.getItem('guestShows'))
-                    currentShows.push(show)
-                    localStorage.setItem('guestShows', JSON.stringify(currentShows))
-                }
-                else{
-                    localStorage.setItem('guestShows', JSON.stringify([show]))
-                }
-                
-            }
-        }
-  }
-
-    // we use the update function to let the store be updated
+    // Add the selected search result to the user's Firestore show list.
     function addToList(show) {
+        if (!$authUser) return;
         show['title_genre'] = 'show';
-        showList.update((data) => {
-            if ($showList?.length == 0 || !$showList) {
-                let currentShows = localStorage.getItem("savedShows");
-                return [show, ... JSON.parse(currentShows)]
-            }
-            // const genreKey= 'title_genre';
-            // show[genreKey] = 'show'
-            return [show, ...data];
-        });
-
-
-        //get api key for the user to send request for auth
-        let api_key = "";
-        UserDataStore.subscribe((storeData) => {
-            // check if this exists if not tell the user to login
-            if (storeData.api_key) {
-                api_key = storeData.api_key;
-            } else {
-                // addToast({
-                //     data: {
-                //         title: "Warning",
-                //         description: "Please login to add titles!",
-                //         color: "yellow",
-                //     },
-                //     closeDelay: 5000,
-                //     type: "foreground",
-                // });
-            }
-        });
-
-        // send request to backend
-        const showListUnsub = showList.subscribe(async (newTitle) => {
-            const server_endpoint = "http://localhost:8200/shows";
-            let res = await fetch(server_endpoint, {
-                method: "POST",
-                body: JSON.stringify(newTitle),
-                headers: {
-                    "Content-type": "applicaiton/json",
-                    Authorization:
-                        "ApiKey " +
-                        `${data.userData}`,
-                },
-            });
-
-            const list_data = await res.json();
-
-            if (res.status >= 400 && res.status < 500) {
-                let update_errors = response?.error;
-
-                // addToast({
-                //     data: {
-                //         title: "Error",
-                //         description: update_errors,
-                //         color: "red",
-                //     },
-                //     closeDelay: 5000,
-                //     type: "foreground",
-                // });
-            }
-            // this is needs to be error handled and displayed to the user
-            // gets the correct errors already
-        });
-
-        onDestroy(showListUnsub);
+        addItem($authUser.uid, 'shows', show);
     }
 
 
@@ -178,11 +77,7 @@
         {/each}
     {/if}
     <div class="context-menu" {...$menu} use:menu>
-        {#if (data.userData == '00000000-0000-0000-0000-000000000000')}
-            <div {...$item} use:item style="color:springgreen; padding-bottom:10px;" on:click={guestAddToList(currentShow)}>Add to List</div>
-        {:else if data.userData != '00000000-0000-0000-0000-000000000000'}
-            <div {...$item} use:item style="color:springgreen; padding-bottom:10px;" on:click={addToList(currentShow)}>Add to List</div>
-        {/if}
+        <div {...$item} use:item style="color:springgreen; padding-bottom:10px;" on:click={addToList(currentShow)}>Add to List</div>
     </div>
 
     <SearchShowModal show={currentShow} windowWidth={width} titleLength={showStrLength} on:addTitle={modalAddToList} bind:showModal />

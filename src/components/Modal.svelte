@@ -52,7 +52,7 @@
     height: 100%;
     text-align: center;
     background: white;
-    max-height: calc(100vh - 100px);
+    max-height: calc(100dvh - 100px);
     overflow-y: auto;
   }
 

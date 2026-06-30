@@ -5,9 +5,8 @@
     // import Header from "../../../../components/Header.svelte";
     import Title from "../../../../../components/Title.svelte";
     import PageSearch from "../../../../../components/PageSearch.svelte";
-    import {gameList, guestGameList} from "../../../../GameStore";
-    import UserDataStore from "../../../../UserDataStore";
-    import { onDestroy } from "svelte";
+    import { authUser } from "$lib/firebase/auth";
+    import { addItem } from "$lib/firebase/db";
     // import { addToast } from "../../../../../components/Toaster.svelte";
     import { createToaster } from "@melt-ui/svelte";
     import {page} from '$app/stores';
@@ -36,120 +35,15 @@
     $: query = data.search_query;
 
 
-    let modalAddToList = (event) =>{
-        if(data.userData == '00000000-0000-0000-0000-000000000000'){
-            guestAddToList(event.detail);
-        }
-        else{
-            addToList(event.detail);
-        }
+    let modalAddToList = (event) => {
+        addToList(event.detail);
     }
 
-
-//   if (data.userData == '00000000-0000-0000-0000-000000000000'){
-//         let localExists;
-//         if(browser)localExists = localStorage.getItem('guestGames');
-//         if(localExists){
-//             data.gameArray = localStorage.getItem('guestGames');
-//         }
-//     }
-
-  // if the key is a guest key we store it using only the localStorage
-  function guestAddToList(game){
-        if (data.userData == '00000000-0000-0000-0000-000000000000'){
-            let currentGames = [];
-            game['title_genre'] = 'game';
-            if(browser){
-                
-                // guestGameList.update((currentData) => {
-                //     return [game, ...currentData];
-                // })
-
-                if(localStorage.getItem('guestGames')){
-                    currentGames = JSON.parse(localStorage.getItem('guestGames'));
-                    currentGames.push(game);
-                    localStorage.setItem('guestGames', JSON.stringify(currentGames))
-                }
-                else{
-                    localStorage.setItem('guestGames', JSON.stringify([game]))
-                }
-
-            }
-        }
-  }
-
-    // we use the update function to let the store be updated
+    // Add the selected search result to the user's Firestore game list.
     function addToList(game) {
-        game['title_genre'] = 'game'
-        gameList.update((data) => {
-            if ($gameList?.length == 0 || !$gameList) {
-                if(localStorage.getItem("savedGames")){
-                    let currentGames = localStorage.getItem("savedGames");
-                    return [game, ... JSON.parse(currentGames)]
-                }
-                else{
-                    localStorage.setItem('savedGames', JSON.stringify(game))
-                    return [game, ... data]
-                }
-            }
-            // const genreKey= 'title_genre';
-            // game[genreKey] = 'game'
-            return [game, ...data];
-        });
-
-        //get api key for the user to send request for auth
-        let api_key = "";
-        UserDataStore.subscribe((storeData) => {
-            // check if this exists if not tell the user to login
-            if (storeData.api_key) {
-                api_key = storeData.api_key;
-            } else {
-                // addToast({
-                //     data: {
-                //         title: "Warning",
-                //         description: "Please login to add titles!",
-                //         color: "yellow",
-                //     },
-                //     closeDelay: 5000,
-                //     type: "foreground",
-                // });
-            }
-        });
-
-        // send request to backend
-        const gameListUnsub = gameList.subscribe(async (newTitle) => {
-            const server_endpoint = "http://localhost:8200/games";
-            let res = await fetch(server_endpoint, {
-                method: "POST",
-                body: JSON.stringify(newTitle),
-                headers: {
-                    "Content-type": "applicaiton/json",
-                    Authorization:
-                        "ApiKey " +
-                        `${data.userData}`,
-                },
-            });
-
-            const list_data = await res.json();
-
-            if (res.status >= 400 && res.status < 500) {
-                let update_errors = response?.error;
-
-                // addToast({
-                //     data: {
-                //         title: "Error",
-                //         description: update_errors,
-                //         color: "red",
-                //     },
-                //     closeDelay: 5000,
-                //     type: "foreground",
-                // });
-            }
-            // this is needs to be error handled and displayed to the user
-            // gets the correct errors already
-        });
-
-        onDestroy(gameListUnsub);
+        if (!$authUser) return;
+        game['title_genre'] = 'game';
+        addItem($authUser.uid, 'games', game);
     }
 
 
@@ -186,11 +80,7 @@
         {/each}
     {/if}
     <div class="context-menu" {...$menu} use:menu>
-        {#if (data.userData == '00000000-0000-0000-0000-000000000000')}
-            <div {...$item} use:item style="color:springgreen; padding-bottom:10px;" on:click={guestAddToList(currentGame)}>Add to List</div>
-        {:else if data.userData != '00000000-0000-0000-0000-000000000000'}
-            <div {...$item} use:item style="color:springgreen; padding-bottom:10px;" on:click={addToList(currentGame)}>Add to List</div>
-        {/if}
+        <div {...$item} use:item style="color:springgreen; padding-bottom:10px;" on:click={addToList(currentGame)}>Add to List</div>
     </div>
 
     <SearchGameModal game={currentGame} windowWidth={width} titleLength={gameStrLength} on:addTitle={modalAddToList} bind:showModal />

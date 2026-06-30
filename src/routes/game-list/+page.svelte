@@ -1,292 +1,68 @@
 <script>
   // @ts-nocheck
   import { browser } from "$app/environment";
-  import { gameList, guestGameList } from "../GameStore";
-  import UserDataStore from "../UserDataStore";
-  // import { addToast } from "../../components/Toaster.svelte";
+  import { onDestroy } from "svelte";
+  import { gameList } from "../GameStore";
+  import { authUser } from "$lib/firebase/auth";
+  import { subscribeList, removeItem, completeItem } from "$lib/firebase/db";
   import Icon from "@iconify/svelte";
-  import { CompletedStore, guestCompletedStore } from "../CompletedTitleStore";
-  import { page } from "$app/stores";
   import Title from "../../components/Title.svelte";
   import ModalTwo from "../../components/ModalTwo.svelte";
-  import { createContextMenu, melt, createTooltip } from "@melt-ui/svelte";
+  import SignInGate from "../../components/SignInGate.svelte";
+  import { createContextMenu } from "@melt-ui/svelte";
   import { fade, blur } from "svelte/transition";
-  import { base } from '$app/paths';
+  import { base } from "$app/paths";
 
-  export let data;
-
-  $: userData = $UserDataStore;
   $: gameListItems = $gameList;
-  $: guestGameListItems = $guestGameList;
-  $: currentGame = {};
-  $: showModal = false;
-
+  let currentGame = {};
+  let showModal = false;
   let gameStrLength;
+  let width;
 
-  // if the user is a guest we neeed to load the appropriate lists
-  if (data.api_key == "00000000-0000-0000-0000-000000000000" && !data.games) {
-    guestGameList.update(() => {
-      if (browser) {
-        // takes the saved local storage and updates the guest list to that
-        let savedGames = JSON.parse(window.localStorage.getItem("guestGames"));
-        return savedGames;
-      }
-    });
-    guestGameListItems = $guestGameList;
-  } else if (data.games) {
-    gameListItems = data.games;
+  // Live-sync this user's games from Firestore (offline-cached).
+  let unsub;
+  $: if (browser) {
+    if ($authUser) {
+      unsub?.();
+      unsub = subscribeList($authUser.uid, "games", (items) => gameList.set(items));
+    } else if ($authUser === null) {
+      unsub?.();
+      unsub = undefined;
+      gameList.set([]);
+    }
   }
+  onDestroy(() => unsub?.());
 
-  // context menu
   const {
     elements: { menu, item, trigger },
   } = createContextMenu();
 
-  let toggleModal = (game) => {
+  function toggleModal(game) {
     currentGame = game;
-    gameStrLength = currentGame.name.length;
+    gameStrLength = currentGame.title?.length;
     showModal = !showModal;
-  };
-
-  // adds list to localstorage for backup
-  gameList.update(() => {
-    if (browser) {
-      window.localStorage.setItem("savedGames", JSON.stringify(data.games));
-    }
-    return data.games;
-  });
+  }
 
   function selectGame(game) {
     currentGame = game;
   }
 
-  async function guestRemoveTitle(id, showToast) {
-    try {
-      let updatedGameList = guestGameListItems.filter((obj) => obj.id !== id);
-      guestGameList.update(() => {
-        if (browser) {
-          window.localStorage.setItem(
-            "guestGames",
-            JSON.stringify(updatedGameList),
-          );
-        }
-        return updatedGameList;
-      });
-
-      if (showToast) {
-        // addToast({
-        //   data: {
-        //     title: "Success",
-        //     description: "The title was removed!",
-        //     color: "green",
-        //   },
-        //   closeDelay: 5000,
-        //   type: "foreground",
-        // });
-      }
-    } catch (error) {
-      // addToast({
-      //   data: {
-      //     title: "Error",
-      //     description: "The title was not removed!",
-      //     color: "red",
-      //   },
-      //   closeDelay: 5000,
-      //   type: "foreground",
-      // });
-    }
-  }
-
-  async function guestCompletedTitle(title) {
-    try {
-      // add the title to the completed list
-      if (browser) {
-        var localExists = JSON.parse(
-          window.localStorage.getItem("guestCompletedTitles"),
-        );
-
-        // get localstorage data into store if it exists
-        if (localExists != null) {
-          guestCompletedStore.update(() => {
-            return [];
-          });
-
-          if (localExists instanceof Array) {
-            guestCompletedStore.set(
-              JSON.parse(window.localStorage.getItem("guestCompletedTitles")),
-            );
-            guestCompletedStore.update((data) => {
-              return [title, ...data];
-            });
-          } else {
-            guestCompletedStore.set([
-              JSON.parse(window.localStorage.getItem("guestCompletedTitles")),
-              ...data,
-            ]);
-            guestCompletedStore.update((data) => {
-              data.push(title);
-              return data;
-            });
-          }
-
-          // store data into localstorage
-          window.localStorage.setItem(
-            "guestCompletedTitles",
-            JSON.stringify($guestCompletedStore),
-          );
-        } else {
-          // otherwise we set the localStorage then add it to the guestStore
-          window.localStorage.setItem(
-            "guestCompletedTitles",
-            JSON.stringify([title]),
-          );
-          guestCompletedStore.update((data) => {
-            return [title];
-          });
-        }
-      }
-
-      //remove it from the ongoing list
-      guestRemoveTitle(title.id, false);
-
-      // addToast({
-      //   data: {
-      //     title: "Success",
-      //     description: "The title was marked as complete",
-      //     color: "green",
-      //   },
-      //   closeDelay: 5000,
-      //   type: "foreground",
-      // });
-    } catch (error) {
-      // addToast({
-      //   data: {
-      //     title: "Error",
-      //     description: "Could not add to completed list",
-      //     color: "red",
-      //   },
-      //   closeDelay: 5000,
-      //   type: "foreground",
-      // });
-    }
-  }
-
-  let modalRemove = (event) => {
+  const modalRemove = (event) => {
     showModal = false;
-    removeTitle(event.detail, false);
+    if ($authUser) removeItem($authUser.uid, "games", event.detail);
   };
 
-  async function removeTitle(id, showToast) {
-    let updatedGameList = gameListItems.filter((obj) => obj.id !== id);
-
-    gameList.update(() => {
-      if (browser) {
-        window.localStorage.setItem(
-          "savedGames",
-          JSON.stringify(updatedGameList),
-        );
-      }
-      return updatedGameList;
-    });
-
-    const server_endpoint = "http://localhost:8200/games";
-    let res = await fetch(server_endpoint, {
-      method: "POST",
-      body: JSON.stringify(updatedGameList),
-      headers: {
-        "Content-type": "applicaiton/json",
-        Authorization: "ApiKey " + $page.data.user.apiKey,
-      },
-    });
-
-    const list_data = await res.json();
-    if (showToast) {
-      if (res.status >= 400 && res.status < 500) {
-        let update_errors = response?.error;
-
-        // addToast({
-        //   data: {
-        //     title: "Error",
-        //     description: "The title was not removed",
-        //     color: "red",
-        //   },
-        //   closeDelay: 5000,
-        //   type: "foreground",
-        // });
-      }
-
-      // addToast({
-      //   data: {
-      //     title: "Success",
-      //     description: "The title was removed!",
-      //     color: "green",
-      //   },
-      //   closeDelay: 5000,
-      //   type: "foreground",
-      // });
-    }
-  }
-
-  let modalComplete = (event) => {
-    completedTitle(event.detail);
+  const modalComplete = (event) => {
+    if ($authUser) completeItem($authUser.uid, "games", event.detail);
   };
 
-  async function completedTitle(title) {
-    if (browser) {
-      if (!window.localStorage.getItem("completedTitles")) {
-        window.localStorage.setItem("completedTitles", JSON.stringify(title));
-      }
-    }
-    // add the title to the completed list
-    CompletedStore.update((data) => {
-      return [title, ...data];
-    });
-
-    window.localStorage.setItem(
-      "completedTitles",
-      JSON.stringify($CompletedStore),
-    );
-
-    //remove it from the ongoing list
-    removeTitle(title.id, false);
-
-    const updateUrl = "http://localhost:8200/completed";
-    let res = await fetch(updateUrl, {
-      method: "POST",
-      body: JSON.stringify(title),
-      headers: {
-        "content-type": "application/json",
-        Authorization: "ApiKey " + $page.data.user.apiKey,
-      },
-    });
-
-    const completedRes = await res.json();
-
-    if (res.status >= 400 && res.status < 500) {
-      let update_errors = response?.error;
-
-      // addToast({
-      //   data: {
-      //     title: "Error",
-      //     description: "Title was not marked as complete",
-      //     color: "red",
-      //   },
-      //   closeDelay: 5000,
-      //   type: "foreground",
-      // });
-    }
-    // addToast({
-    //   data: {
-    //     title: "Success",
-    //     description: "Your title has been added to a completed list",
-    //     color: "green",
-    //   },
-    //   closeDelay: 5000,
-    //   type: "foreground",
-    // });
+  function removeTitle(id) {
+    if ($authUser) removeItem($authUser.uid, "games", id);
   }
 
-  let width;
+  function completedTitle(game) {
+    if ($authUser) completeItem($authUser.uid, "games", game);
+  }
 </script>
 
 <svelte:window bind:innerWidth={width} />
@@ -297,18 +73,21 @@
         ><Icon class="back-icon" icon="pixelarticons:arrow-left" />
         <p class="back-text">Back to Menu</p>
         </a>
-    {:else if width < 1200}
+    {:else}
     <a href="{base}/list-menu" class="return-button"><Icon class="back-icon" icon="pixelarticons:arrow-left" /></a
     >
     {/if}
     <h1 class="genre">My</h1>
     <h1 class="genre">Games</h1>
   </div>
+
   {#if browser}
-    {#if data.api_key == "00000000-0000-0000-0000-000000000000"}
-      {#if guestGameListItems && guestGameListItems.length > 0 && guestGameListItems[0] != null}
+    {#if $authUser === null}
+      <SignInGate message="Sign in to view and sync your games." />
+    {:else if $authUser}
+      {#if gameListItems && gameListItems.length > 0 && gameListItems[0] != null}
         <div class="movie-grid">
-          {#each guestGameListItems as game}
+          {#each gameListItems as game (game.id)}
             <div
               out:blur|global
               in:fade|global
@@ -321,89 +100,47 @@
             </div>
           {/each}
         </div>
+
+        <div class="context-menu" {...$menu} use:menu>
+          <div
+            {...$item}
+            use:item
+            style="color:springgreen; padding-bottom:10px; cursor:pointer;"
+            on:click={completedTitle(currentGame)}
+          >
+            Mark as Complete
+          </div>
+          <div
+            {...$item}
+            use:item
+            style="color:red; cursor:pointer;"
+            on:click={removeTitle(currentGame.id)}
+          >
+            Remove Title
+          </div>
+        </div>
+      {:else}
+        <div class="empty-container">
+          <p class="message">cat got your analog stick ??</p>
+          <a class="search-link" href="{base}/game-list/search">Try adding some games here => </a>
+        </div>
       {/if}
 
-      <div class="context-menu" {...$menu} use:menu>
-        <div
-          {...$item}
-          use:item
-          style="color:springgreen; padding-bottom:10px; cursor:pointer;"
-          on:click={guestCompletedTitle(currentGame)}
-        >
-          Mark as Complete
-        </div>
-        <div
-          {...$item}
-          use:item
-          style="color:red; cursor:pointer;"
-          on:click={guestRemoveTitle(currentGame.id, true)}
-        >
-          Remove Title
-        </div>
-      </div>
-    {/if}
-    <!-- && $page.data.user.apiKey -->
-    {#if gameListItems && gameListItems.length > 0 && gameListItems[0] != null}
-      <div class="movie-grid">
-        {#each gameListItems as game}
-          <div
-            out:blur|global
-            in:fade|global
-            on:click={toggleModal(game)}
-            on:contextmenu={selectGame(game)}
-            {...$trigger}
-            use:trigger
-          >
-            <Title title={game} titleGenre={"game"} />
-          </div>
-        {/each}
-      </div>
+      <ModalTwo
+        title={currentGame}
+        titleGenre={"game"}
+        windowWidth={width}
+        titleLength={gameStrLength}
+        on:completeTitle={modalComplete}
+        on:removeTitle={modalRemove}
+        bind:showModal
+      />
 
-      <div class="context-menu" {...$menu} use:menu>
-        <div
-          {...$item}
-          use:item
-          style="color:springgreen; padding-bottom:10px; cursor:pointer;"
-          on:click={completedTitle(currentGame)}
-        >
-          Mark as Complete
-        </div>
-        <div
-          {...$item}
-          use:item
-          style="color:red; cursor:pointer;"
-          on:click={removeTitle(currentGame.id, true)}
-        >
-          Remove Title
-        </div>
-      </div>
-    {/if}
-
-    <ModalTwo
-      title={currentGame}
-      titleGenre={"game"}
-      windowWidth={width}
-      titleLength={gameStrLength}
-      on:completeTitle={modalComplete}
-      on:removeTitle={modalRemove}
-      bind:showModal
-    />
-
-    {#if data.api_key == "00000000-0000-0000-0000-000000000000" && guestGameListItems?.length == 0 || !guestGameListItems}
-      <div class="empty-container">
-        <p class="message">cat got your analog stick ??</p>
-        <a class="search-link" href="{base}/game-list/search">Try adding some games here => </a>
-      </div>
-    {:else if gameListItems?.length || !gameListItems == 0 && data.api_key}
-      <div class="empty-container">
-        <p class="message">cat got your analog stick ??</p>
-        <a class="search-link" href="{base}/game-list/search">Try adding some games here => </a>
-      </div>
+      <a href="{base}/game-list/search/"
+        ><button class="add-movie"><Icon icon="mdi:plus" /></button></a
+      >
     {/if}
   {/if}
-  <a href="{base}/game-list/search/"
-    ><button class="add-movie"><Icon icon="mdi:plus" /></button></a
-  >
 </div>
 
 <style lang="postcss">
@@ -425,7 +162,7 @@
     background-color: #5755FE;
     border-radius: 36px;
     position: fixed;
-    bottom: 1rem;
+    bottom: calc(1rem + var(--safe-bottom, env(safe-area-inset-bottom, 0px)));
     right: 2rem;
     z-index: 10;
     box-shadow:
@@ -477,7 +214,7 @@
   .ovr-container {
     background: #181818;
     padding: 0.7rem;
-    height: 100vh;
+    height: 100dvh;
     overflow: auto;
   }
 
@@ -590,7 +327,7 @@
       background: #181818;
       padding: 2rem 6.7rem;
       overflow: auto;
-      height: calc(100vh - 64px);
+      height: calc(100dvh - 64px);
     }
 
     .movie-grid {

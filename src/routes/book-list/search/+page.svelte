@@ -33,7 +33,7 @@
         align-items: center;
         justify-items: center;
         padding-top: 1.5rem;
-        /* height: calc(100vh - 96px); */
+        /* height: calc(100dvh - 96px); */
         background-color: #181818;
     }
 

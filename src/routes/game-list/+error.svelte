@@ -43,7 +43,7 @@
 		display: grid;
 		grid-template-columns: repeat(12, 1fr);
 		grid-template-rows: repeat(5, 2fr);
-		height: 100vh;
+		height: 100dvh;
 		width: 100vw;
 		margin: 0;
 		font-family: 'header-font';

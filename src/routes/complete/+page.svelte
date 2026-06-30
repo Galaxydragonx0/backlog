@@ -1,46 +1,44 @@
 <script>
-    
-    import Title from '../../components/Title.svelte';
-    import { guestCompletedStore } from '../CompletedTitleStore';
+    // @ts-nocheck
+    import { onDestroy } from "svelte";
+    import { writable } from "svelte/store";
     import { browser } from "$app/environment";
-    import { guestMovieList } from '../MovieStore';
-    
-    // @ts-ignore
-    export let data;
-    $: guestCompletedTitles = $guestCompletedStore;
+    import Title from '../../components/Title.svelte';
+    import SignInGate from '../../components/SignInGate.svelte';
+    import { authUser } from '$lib/firebase/auth';
+    import { subscribeList } from '$lib/firebase/db';
 
-    if (data.api_key == "00000000-0000-0000-0000-000000000000" && !data.compTitles) {
-        guestCompletedStore.update((data) => {
-        if (browser) {
-            let savedMovies = JSON.parse(window.localStorage.getItem("guestCompletedTitles")|| '[]');
-            return savedMovies;
+    // Live-sync the user's completed titles from Firestore.
+    const completedTitles = writable([]);
+    let unsub;
+    $: if (browser) {
+        if ($authUser) {
+            unsub?.();
+            unsub = subscribeList($authUser.uid, 'completed', (items) => completedTitles.set(items));
+        } else if ($authUser === null) {
+            unsub?.();
+            unsub = undefined;
+            completedTitles.set([]);
         }
-    });
-    
-  }
+    }
+    onDestroy(() => unsub?.());
 </script>
 
 <div class="ovr-container">
     <div class="header">
         <h1>Completed Titles</h1>
     </div>
-    <div class="title-grid">
-    {#if data.api_key == '00000000-0000-0000-0000-000000000000'}
-        {#if guestCompletedTitles && guestCompletedTitles.length > 0 && guestCompletedTitles[0] != null}
-            {#each guestCompletedTitles as title}
+    {#if $authUser === null}
+        <SignInGate message="Sign in to view your completed titles." />
+    {:else if $authUser}
+        <div class="title-grid">
+            {#each $completedTitles as title (title.id)}
                 <div class="title-container">
                     <Title title={title} titleGenre={title.title_genre}/>
                 </div>
             {/each}
-        {/if}
-    {:else if (data.compTitles)}
-        {#each data.compTitles as title}
-            <div class="title-container">
-                <Title title={title} titleGenre={title.title_genre}/>
-            </div>
-        {/each} 
+        </div>
     {/if}
-    </div>
 </div>
 
 
@@ -49,7 +47,7 @@
     .ovr-container {
     background: #181818;
     padding: 0.7rem;
-    height: 100vh;
+    height: 100dvh;
     overflow: auto;
   }
     /* short ahhhh phone */
@@ -75,7 +73,7 @@
         grid-auto-rows: auto;
         justify-items: center;
         background-color: #181818;
-        height: 100vh;
+        height: 100dvh;
         /* overflow-y: hidden; */
         }
 
@@ -107,7 +105,7 @@
             grid-auto-rows: auto;
             justify-items: center;
             background-color: #181818;
-            height: 100vh;
+            height: 100dvh;
             /* overflow-y: hidden; */
             padding: 17px;
         }
@@ -124,7 +122,7 @@
             background: #181818;
             padding: 2rem 6.7rem;
             overflow-y: auto;
-            height: 100vh;
+            height: 100dvh;
         }
 
         .header{
@@ -145,7 +143,7 @@
             grid-auto-rows: auto;
             justify-items: center;
             background-color: #181818;
-            height: 120vh;
+            height: 120dvh;
             /* overflow-y: hidden; */
         }
 

@@ -5,9 +5,8 @@
     // import Header from "../../../../components/Header.svelte";
     import Title from "../../../../../components/Title.svelte";
     import PageSearch from "../../../../../components/PageSearch.svelte";
-    import {movieList, guestMovieList} from "../../../../MovieStore";
-    import UserDataStore from "../../../../UserDataStore";
-    import { onDestroy } from "svelte";
+    import { authUser } from "$lib/firebase/auth";
+    import { addItem } from "$lib/firebase/db";
     // import { addToast } from "../../../../../components/Toaster.svelte";
     import { createToaster } from "@melt-ui/svelte";
     import {page} from '$app/stores';
@@ -36,137 +35,15 @@
     $: query = data.search_query;
 
 
-    let modalAddToList = (event) =>{
-        if(data.userData == '00000000-0000-0000-0000-000000000000'){
-            guestAddToList(event.detail);
-        }
-        else{
-            addToList(event.detail);
-        }
+    let modalAddToList = (event) => {
+        addToList(event.detail);
     }
 
-
-//   if (data.userData == '00000000-0000-0000-0000-000000000000'){
-//         let localExists;
-//         if(browser)localExists = localStorage.getItem('guestMovies');
-//         if(localExists){
-//             data.movieArray = localStorage.getItem('guestMovies');
-//         }
-//     }
-
-  // if the key is a guest key we store it using only the localStorage
-  function guestAddToList(movie){
-    console.log("the guest one is triggered, outside if")
-        if (data.userData == '00000000-0000-0000-0000-000000000000'){
-            console.log("the guest one is triggered, inside if")
-            let currentMovies = []
-            movie['title_genre'] = 'movie';
-            if(browser){
-
-                // guestMovieList.update((currentData) => {
-                //     return [movie, ...currentData];
-                // })
-
-                if(localStorage.getItem('guestMovies')){
-                    currentMovies = JSON.parse(localStorage.getItem('guestMovies'));
-                    currentMovies.push(movie);
-                    localStorage.setItem('guestMovies', JSON.stringify(currentMovies))
-                }
-                else{
-                    localStorage.setItem('guestMovies', JSON.stringify([movie]))
-                }
-                
-            }
-
-                // addToast({
-                //     data: {
-                //         title: "Success",
-                //         description: "Add movie to your list",
-                //         color: "green",
-                //     },
-                //     closeDelay: 5000,
-                //     type: "foreground",
-                // });
-        }
-  }
-
-    // we use the update function to let the store be updated
+    // Add the selected search result to the user's Firestore movie list.
     function addToList(movie) {
-        console.log("the logged in one is triggered")
+        if (!$authUser) return;
         movie['title_genre'] = 'movie';
-        movieList.update((data) => {
-            if ($movieList?.length == 0 || !$movieList) {
-                let currentMovies = localStorage.getItem("savedMovies");
-                return [movie, ... JSON.parse(currentMovies)]
-            }
-            // const genreKey= 'title_genre';
-            // movie[genreKey] = 'movie'
-            return [movie, ...data];
-        });
-
-        //get api key for the user to send request for auth
-        let api_key = "";
-        UserDataStore.subscribe((storeData) => {
-            // check if this exists if not tell the user to login
-            if (storeData.api_key) {
-                api_key = storeData.api_key;
-            } else {
-                // addToast({
-                //     data: {
-                //         title: "Warning",
-                //         description: "Please login to add titles!",
-                //         color: "yellow",
-                //     },
-                //     closeDelay: 5000,
-                //     type: "foreground",
-                // });
-            }
-        });
-
-        // send request to backend
-        const movieListUnsub = movieList.subscribe(async (newTitle) => {
-            const server_endpoint = "http://localhost:8200/movies";
-            let res = await fetch(server_endpoint, {
-                method: "POST",
-                body: JSON.stringify(newTitle),
-                headers: {
-                    "Content-type": "applicaiton/json",
-                    Authorization:
-                        "ApiKey " +
-                        `${data.userData}`,
-                },
-            });
-
-            const list_data = await res.json();
-
-            if (res.status >= 400 && res.status < 500) {
-                let update_errors = response?.error;
-
-                // addToast({
-                //     data: {
-                //         title: "Error",
-                //         description: update_errors,
-                //         color: "red",
-                //     },
-                //     closeDelay: 5000,
-                //     type: "foreground",
-                // });
-            }
-            
-            if(res.status == 200){
-                // addToast({
-                //     data: {
-                //         title: "Success",
-                //         description: "Add movie to your list",
-                //         color: "green",
-                //     },
-                //     closeDelay: 5000,
-                //     type: "foreground",
-                // });
-            }
-        });
-
-        onDestroy(movieListUnsub);
+        addItem($authUser.uid, 'movies', movie);
     }
 
 
@@ -205,11 +82,7 @@
         {/each}
     {/if}
     <div class="context-menu" {...$menu} use:menu>
-        {#if (data.userData == '00000000-0000-0000-0000-000000000000')}
-            <div {...$item} use:item style="color:springgreen; padding-bottom:10px;" on:click={guestAddToList(currentMovie)}>Add to List</div>
-        {:else if data.userData != '00000000-0000-0000-0000-000000000000'}
-            <div {...$item} use:item style="color:springgreen; padding-bottom:10px;" on:click={addToList(currentMovie)}>Add to List</div>
-        {/if}
+        <div {...$item} use:item style="color:springgreen; padding-bottom:10px;" on:click={addToList(currentMovie)}>Add to List</div>
     </div>
 
     <SearchMovieModal movie={currentMovie} windowWidth={width} titleLength={movieStrLength} on:addTitle={modalAddToList} bind:showModal />

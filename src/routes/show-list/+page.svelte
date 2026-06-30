@@ -1,301 +1,68 @@
 <script>
   // @ts-nocheck
   import { browser } from "$app/environment";
-  import { showList, guestShowList } from "../ShowStore";
-  import UserDataStore from "../UserDataStore";
-  // import { addToast } from "../../components/Toaster.svelte";
+  import { onDestroy } from "svelte";
+  import { showList } from "../ShowStore";
+  import { authUser } from "$lib/firebase/auth";
+  import { subscribeList, removeItem, completeItem } from "$lib/firebase/db";
   import Icon from "@iconify/svelte";
-  import { CompletedStore, guestCompletedStore } from "../CompletedTitleStore";
-  import { page } from "$app/stores";
   import Title from "../../components/Title.svelte";
   import ModalTwo from "../../components/ModalTwo.svelte";
-  import { createContextMenu, melt, createTooltip } from "@melt-ui/svelte";
+  import SignInGate from "../../components/SignInGate.svelte";
+  import { createContextMenu } from "@melt-ui/svelte";
   import { fade, blur } from "svelte/transition";
-  import { base } from '$app/paths';
+  import { base } from "$app/paths";
 
-  export let data;
-
-  $: userData = $UserDataStore;
   $: showListItems = $showList;
-  $: guestShowListItems = $guestShowList;
-  $: currentShow = {};
-  $: showModal = false;
-
+  let currentShow = {};
+  let showModal = false;
   let showStrLength;
+  let width;
 
-  // if the user is a guest we neeed to load the appropriate lists
-  if (data.api_key == "00000000-0000-0000-0000-000000000000" && !data.shows) {
-    guestShowList.update((data) => {
-      if (browser) {
-        // takes the saved local storage and updates the guest list to that
-        let savedShows = JSON.parse(window.localStorage.getItem("guestShows"));
-        return savedShows;
-      }
-    });
-    guestShowListItems = $guestShowList;
-
-  } else if (data.shows) {
-    showListItems = data.shows;
+  // Live-sync this user's shows from Firestore (offline-cached).
+  let unsub;
+  $: if (browser) {
+    if ($authUser) {
+      unsub?.();
+      unsub = subscribeList($authUser.uid, "shows", (items) => showList.set(items));
+    } else if ($authUser === null) {
+      unsub?.();
+      unsub = undefined;
+      showList.set([]);
+    }
   }
+  onDestroy(() => unsub?.());
 
-  // context menu
   const {
     elements: { menu, item, trigger },
   } = createContextMenu();
 
-  let toggleModal = (show) => {
+  function toggleModal(show) {
     currentShow = show;
-    showStrLength = currentShow.name.length;
+    showStrLength = currentShow.title?.length;
     showModal = !showModal;
-  };
-
-  // adds list to localstorage for backup
-  showList.update(() => {
-    if (browser) {
-      window.localStorage.setItem("savedShows", JSON.stringify(data.shows));
-    }
-    return data.shows;
-  });
+  }
 
   function selectShow(show) {
     currentShow = show;
   }
 
-  async function guestRemoveTitle(id, showToast) {
-    try {
-      let updatedShowList = guestShowListItems.filter((obj) => obj.id !== id);
-      guestShowList.update(() => {
-        if (browser) {
-          window.localStorage.setItem(
-            "guestShows",
-            JSON.stringify(updatedShowList),
-          );
-        }
-        return updatedShowList;
-      });
-
-      if (showToast) {
-        // addToast({
-        //   data: {
-        //     title: "Success",
-        //     description: "The title was removed!",
-        //     color: "green",
-        //   },
-        //   closeDelay: 5000,
-        //   type: "foreground",
-        // });
-      }
-    } catch (error) {
-      // addToast({
-      //   data: {
-      //     title: "Error",
-      //     description: "The title was not removed!",
-      //     color: "red",
-      //   },
-      //   closeDelay: 5000,
-      //   type: "foreground",
-      // });
-    }
-  }
-
-  async function guestCompletedTitle(title) {
-    try {
-      // add the title to the completed list
-      if (browser) {
-        var localExists = JSON.parse(
-          window.localStorage.getItem("guestCompletedTitles"),
-        );
-
-        // get localstorage data into store if it exists
-        if (localExists != null) {
-          guestCompletedStore.update(() => {
-            return [];
-          });
-
-          if (localExists instanceof Array) {
-            guestCompletedStore.set(
-              JSON.parse(window.localStorage.getItem("guestCompletedTitles")),
-            );
-            guestCompletedStore.update((data) => {
-              return [title, ...data];
-            });
-          } else {
-            guestCompletedStore.set([
-              JSON.parse(window.localStorage.getItem("guestCompletedTitles")),
-              ...data,
-            ]);
-            guestCompletedStore.update((data) => {
-              data.push(title);
-              return data;
-            });
-          }
-
-          // store data into localstorage
-          window.localStorage.setItem(
-            "guestCompletedTitles",
-            JSON.stringify($guestCompletedStore),
-          );
-        } else {
-          // otherwise we set the localStorage then add it to the guestStore
-          window.localStorage.setItem(
-            "guestCompletedTitles",
-            JSON.stringify([title]),
-          );
-          guestCompletedStore.update((data) => {
-            return [title];
-          });
-        }
-      }
-
-      //remove it from the ongoing list
-      guestRemoveTitle(title.id, false);
-
-      // addToast({
-      //   data: {
-      //     title: "Success",
-      //     description: "The title was marked as complete",
-      //     color: "green",
-      //   },
-      //   closeDelay: 5000,
-      //   type: "foreground",
-      // });
-    } catch (error) {
-      // addToast({
-      //   data: {
-      //     title: "Error",
-      //     description: "Could not add to completed list",
-      //     color: "red",
-      //   },
-      //   closeDelay: 5000,
-      //   type: "foreground",
-      // });
-    }
-  }
-
-  let modalRemove = (event) => {
+  const modalRemove = (event) => {
     showModal = false;
-    if (data.api_key == "00000000-0000-0000-0000-000000000000") {
-      guestRemoveTitle(event.detail, false);
-      return;
-    }
-    removeTitle(event.detail, false);
+    if ($authUser) removeItem($authUser.uid, "shows", event.detail);
   };
 
-  async function removeTitle(id, showToast) {
-    let updatedShowList = showListItems.filter((obj) => obj.id !== id);
-
-    showList.update(() => {
-      if (browser) {
-        window.localStorage.setItem(
-          "savedShows",
-          JSON.stringify(updatedShowList),
-        );
-      }
-      return updatedShowList;
-    });
-
-    const server_endpoint = "http://localhost:8200/shows";
-    let res = await fetch(server_endpoint, {
-      method: "POST",
-      body: JSON.stringify(updatedShowList),
-      headers: {
-        "Content-type": "applicaiton/json",
-        Authorization: "ApiKey " + $page.data.user.apiKey,
-      },
-    });
-
-    const list_data = await res.json();
-    if (showToast) {
-      if (res.status >= 400 && res.status < 500) {
-        let update_errors = response?.error;
-
-        // addToast({
-        //   data: {
-        //     title: "Error",
-        //     description: "The title was not removed",
-        //     color: "red",
-        //   },
-        //   closeDelay: 5000,
-        //   type: "foreground",
-        // });
-      }
-
-      // addToast({
-      //   data: {
-      //     title: "Success",
-      //     description: "The title was removed!",
-      //     color: "green",
-      //   },
-      //   closeDelay: 5000,
-      //   type: "foreground",
-      // });
-    }
-  }
-
-  let modalComplete = (event) => {
-    if (data.api_key == "00000000-0000-0000-0000-000000000000") {
-      guestCompletedTitle(event.detail, false);
-      return;
-    }
-    completedTitle(event.detail);
+  const modalComplete = (event) => {
+    if ($authUser) completeItem($authUser.uid, "shows", event.detail);
   };
 
-  async function completedTitle(title) {
-    if (browser) {
-      if (!window.localStorage.getItem("completedTitles")) {
-        window.localStorage.setItem("completedTitles", JSON.stringify(title));
-      }
-    }
-
-    // add the title to the completed list
-    CompletedStore.update((data) => {
-      return [title, ...data];
-    });
-    window.localStorage.setItem(
-      "completedTitles",
-      JSON.stringify($CompletedStore),
-    );
-
-    //remove it from the ongoing list
-    removeTitle(title.id, false);
-
-    const updateUrl = "http://localhost:8200/completed";
-    let res = await fetch(updateUrl, {
-      method: "POST",
-      body: JSON.stringify(title),
-      headers: {
-        "content-type": "application/json",
-        Authorization: "ApiKey " + $page.data.user.apiKey,
-      },
-    });
-
-    const completedRes = await res.json();
-
-    if (res.status >= 400 && res.status < 500) {
-      let update_errors = response?.error;
-
-      // addToast({
-      //   data: {
-      //     title: "Error",
-      //     description: "Title was not marked as complete",
-      //     color: "red",
-      //   },
-      //   closeDelay: 5000,
-      //   type: "foreground",
-      // });
-    }
-    // addToast({
-    //   data: {
-    //     title: "Success",
-    //     description: "Your title has been added to a completed list",
-    //     color: "green",
-    //   },
-    //   closeDelay: 5000,
-    //   type: "foreground",
-    // });
+  function removeTitle(id) {
+    if ($authUser) removeItem($authUser.uid, "shows", id);
   }
 
-  let width;
+  function completedTitle(show) {
+    if ($authUser) completeItem($authUser.uid, "shows", show);
+  }
 </script>
 
 <svelte:window bind:innerWidth={width} />
@@ -304,10 +71,9 @@
     {#if width >= 1200}
       <a href="{base}/list-menu" class="return-button"
         ><Icon class="back-icon" icon="pixelarticons:arrow-left" />
-        <p class="back-text">Back to Menu</p>
-        <p></p></a
+        <p class="back-text">Back to Menu</p></a
       >
-    {:else if width<1200}
+    {:else}
     <a href="{base}/list-menu" class="return-button"
       ><Icon class="back-icon" icon="pixelarticons:arrow-left" /></a
     >
@@ -315,11 +81,14 @@
     <h1 class="genre">My</h1>
     <h1 class="genre">Shows</h1>
   </div>
+
   {#if browser}
-    {#if data.api_key == "00000000-0000-0000-0000-000000000000"}
-      {#if guestShowListItems && guestShowListItems.length > 0 && guestShowListItems[0] != null}
+    {#if $authUser === null}
+      <SignInGate message="Sign in to view and sync your shows." />
+    {:else if $authUser}
+      {#if showListItems && showListItems.length > 0 && showListItems[0] != null}
         <div class="movie-grid">
-          {#each guestShowListItems as show}
+          {#each showListItems as show (show.id)}
             <div
               out:blur|global
               in:fade|global
@@ -332,97 +101,50 @@
             </div>
           {/each}
         </div>
+
+        <div class="context-menu" {...$menu} use:menu>
+          <div
+            {...$item}
+            use:item
+            style="color:springgreen; padding-bottom:10px; cursor:pointer;"
+            on:click={completedTitle(currentShow)}
+          >
+            Mark as Complete
+          </div>
+          <div
+            {...$item}
+            use:item
+            style="color:red; cursor:pointer;"
+            on:click={removeTitle(currentShow.id)}
+          >
+            Remove Title
+          </div>
+        </div>
+      {:else}
+        <div class="empty-container">
+          <p class="message">
+            If you add a CW show, you should pay me for this app (I don't judge
+            tho)
+          </p>
+          <a class="search-link" href="{base}/show-list/search">Try adding some shows here => </a>
+        </div>
       {/if}
 
-      <div class="context-menu" {...$menu} use:menu>
-        <div
-          {...$item}
-          use:item
-          style="color:springgreen; padding-bottom:10px; cursor:pointer;"
-          on:click={guestCompletedTitle(currentShow)}
-        >
-          Mark as Complete
-        </div>
-        <div
-          {...$item}
-          use:item
-          style="color:red; cursor:pointer;"
-          on:click={guestRemoveTitle(currentShow.id, true)}
-        >
-          Remove Title
-        </div>
-      </div>
-    {/if}
-    <!-- && $page.data.user.apiKey -->
-    {#if showListItems && showListItems.length > 0 && showListItems[0] != null}
-      <div class="movie-grid">
-        {#each showListItems as show}
-          <div
-            out:blur|global
-            in:fade|global
-            on:click={toggleModal(show)}
-            on:contextmenu={selectShow(show)}
-            {...$trigger}
-            use:trigger
-          >
-            <Title title={show} titleGenre={"show"} />
-          </div>
-        {/each}
-      </div>
+      <ModalTwo
+        title={currentShow}
+        titleGenre={"show"}
+        windowWidth={width}
+        titleLength={showStrLength}
+        on:completeTitle={modalComplete}
+        on:removeTitle={modalRemove}
+        bind:showModal
+      />
 
-      <div class="context-menu" {...$menu} use:menu>
-        <div
-          {...$item}
-          use:item
-          style="color:springgreen; padding-bottom:10px; cursor:pointer;"
-          on:click={completedTitle(currentShow)}
-        >
-          Mark as Complete
-        </div>
-        <div
-          {...$item}
-          use:item
-          style="color:red; cursor:pointer;"
-          on:click={removeTitle(currentShow.id, true)}
-        >
-          Remove Title
-        </div>
-      </div>
-    {/if}
-
-    <ModalTwo
-      title={currentShow}
-      titleGenre={"show"}
-      windowWidth={width}
-      titleLength={showStrLength}
-      on:completeTitle={modalComplete}
-      on:removeTitle={modalRemove}
-      bind:showModal
-    />
-
-    {#if data.api_key == "00000000-0000-0000-0000-000000000000" && (guestShowListItems?.length == 0 || !guestShowListItems)}
-      <div class="empty-container">
-        <p class="message">
-          If you add a CW show, you should pay me for this app (I don't judge
-          tho)
-        </p>
-        <a class="search-link" href="{base}/show-list/search"
-          >Try adding some shows here =>
-        </a>
-      </div>
-    {:else if (!showListItems || showListItems?.length) == 0 && data.api_key}
-      <div class="empty-container">
-        <p class="message">
-          If you add a CW show, you should pay me for this app (I don't judge
-          tho)
-        </p>
-        <a class="search-link" href="{base}/show-list/search">Try adding some shows here => </a>
-      </div>
+      <a href="{base}/show-list/search/"
+        ><button class="add-movie"><Icon icon="mdi:plus" /></button></a
+      >
     {/if}
   {/if}
-  <a href="{base}/show-list/search/"
-    ><button class="add-movie"><Icon icon="mdi:plus" /></button></a
-  >
 </div>
 
 <style lang="postcss">
@@ -444,7 +166,7 @@
     background-color: #ff5200;
     border-radius: 36px;
     position: fixed;
-    bottom: 1rem;
+    bottom: calc(1rem + var(--safe-bottom, env(safe-area-inset-bottom, 0px)));
     right: 2rem;
     z-index: 10;
     box-shadow:
@@ -497,7 +219,7 @@
     background: #181818;
     padding: 0.7rem;
     overflow: auto;
-    height: 100vh;
+    height: 100dvh;
   }
 
   .genre-container {
@@ -609,7 +331,7 @@
       background: #181818;
       padding: 2rem 6.7rem;
       overflow: auto;
-      height: calc(100vh - 64px);
+      height: calc(100dvh - 64px);
     }
 
     .movie-grid {
