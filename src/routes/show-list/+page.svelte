@@ -203,6 +203,7 @@
     grid-template-columns: repeat(2, 1fr);
     grid-auto-rows: auto;
     justify-items: center;
+    gap: 1.5rem 1rem;
     padding: 10px;
   }
 
@@ -339,6 +340,7 @@
       grid-template-columns: repeat(5, 1fr);
       grid-auto-rows: auto;
       justify-items: center;
+      gap: 2rem 1.5rem;
     }
 
     .genre {

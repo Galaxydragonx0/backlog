@@ -23,8 +23,13 @@
 			await signInWithGoogle();
 			dialog?.close();
 		} catch (e) {
-			// Popup closed/blocked or network error.
-			error = e?.code === 'auth/popup-closed-by-user' ? '' : 'Sign-in failed. Try again.';
+			// Surface the real Firebase error code so failures are diagnosable.
+			console.error('Google sign-in failed:', e);
+			if (e?.code === 'auth/popup-closed-by-user' || e?.code === 'auth/cancelled-popup-request') {
+				error = '';
+			} else {
+				error = e?.code ? `Sign-in failed: ${e.code}` : 'Sign-in failed. Try again.';
+			}
 		}
 	}
 

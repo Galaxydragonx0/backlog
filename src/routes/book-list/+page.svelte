@@ -198,10 +198,10 @@
   .movie-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(10, 1fr);
+    grid-auto-rows: auto;
     justify-items: center;
+    gap: 1.5rem 1rem;
     padding: 10px;
-    height: calc(100dvh - 134px);
   }
 
   .genre {
@@ -337,6 +337,7 @@
       grid-template-columns: repeat(7, 1fr);
       grid-auto-rows: auto;
       justify-items: center;
+      gap: 2rem 1.5rem;
     }
 
     .genre {

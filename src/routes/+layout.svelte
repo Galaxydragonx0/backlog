@@ -1,5 +1,19 @@
 <script>
 	// Root layout: global mobile/device baseline applied to every route.
+	import { onNavigate } from '$app/navigation';
+
+	// Smooth cross-fade + slide between pages via the View Transitions API.
+	// Works in Chrome (Oppo Find X8 Ultra) and Safari 18+ (iPhone 15 Pro);
+	// where unsupported it simply navigates instantly (no error).
+	onNavigate((navigation) => {
+		if (!document.startViewTransition) return;
+		return new Promise((resolve) => {
+			document.startViewTransition(async () => {
+				resolve();
+				await navigation.complete;
+			});
+		});
+	});
 </script>
 
 <slot />
@@ -34,5 +48,32 @@
 	:global(body) {
 		overflow-x: hidden;
 		-webkit-overflow-scrolling: touch;
+	}
+
+	/* ---- Page transitions (View Transitions API) ---- */
+	@keyframes -global-vt-fade-in {
+		from {
+			opacity: 0;
+			transform: translateY(8px);
+		}
+	}
+	@keyframes -global-vt-fade-out {
+		to {
+			opacity: 0;
+			transform: translateY(-8px);
+		}
+	}
+	:global(::view-transition-old(root)) {
+		animation: vt-fade-out 0.22s ease both;
+	}
+	:global(::view-transition-new(root)) {
+		animation: vt-fade-in 0.28s ease both;
+	}
+	/* Respect users who ask for less motion. */
+	@media (prefers-reduced-motion: reduce) {
+		:global(::view-transition-old(root)),
+		:global(::view-transition-new(root)) {
+			animation: none;
+		}
 	}
 </style>

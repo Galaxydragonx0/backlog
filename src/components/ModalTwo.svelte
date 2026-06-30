@@ -297,7 +297,11 @@
 			background: rgb(0 0 0 / 69%);
 			border-radius: 10px;
 			color: wheat;
-			height: 95vh;
+			width: 85vw;
+			height: 90vh;
+			height: 90dvh;
+			max-width: 85vw;
+			overflow-y: auto;
 		}
 
 		.movie-container {
@@ -323,7 +327,6 @@
 		.position-change {
 			grid-column: 1 / -1;
 			grid-row: 8;
-			position: relative;
 		}
 
 		.movie-container > .poster {
@@ -362,7 +365,7 @@
 		}
 
 		dialog {
-			max-width: 32em;
+			max-width: 90vw;
 			border-radius: 0.2em;
 			border: none;
 			padding: 0;
@@ -379,19 +382,20 @@
 		}
 
 		.action-buttons {
-			position: absolute;
-			width: 91%;
-			height: 1rem;
-			bottom: -5rem;
-			left: 2.5rem;
+			display: flex;
+			flex-wrap: wrap;
+			gap: 1rem;
+			justify-content: center;
+			align-items: center;
+			width: 100%;
+			margin-top: 1.5rem;
+			padding-bottom: 1rem;
+			box-sizing: border-box;
 		}
 
 		.complete-button {
-			position: absolute;
-			bottom: 1rem;
-			right: 3rem;
 			background-color: #040f41;
-			padding: 5px;
+			padding: 0.6rem 0.9rem;
 			border-radius: 10px;
 			color: green;
 			font-weight: bold;
@@ -400,12 +404,9 @@
 
 		.remove-button {
 			color: darkred;
-			position: absolute;
-			bottom: 1rem;
 			font-weight: bold;
-			right: 14rem;
 			background-color: #040f41;
-			padding: 5px;
+			padding: 0.6rem 0.9rem;
 			border-radius: 10px;
 			font-family: "DotGothic16", sans-serif;
 		}
@@ -465,9 +466,12 @@
 			background: rgb(0 0 0 / 69%);
 			border-radius: 10px;
 			color: wheat;
-			height: 95vh;
-			max-height: calc(100dvh - 6rem);
-			width: 95vw;
+			width: 85vw;
+			height: 90vh;
+			height: 90dvh;
+			max-width: 85vw;
+			max-height: 90dvh;
+			overflow-y: auto;
 		}
 
 		.movie-container {
@@ -492,7 +496,6 @@
 		.position-change {
 			grid-column: 1 / -1;
 			grid-row: 8;
-			position: relative;
 		}
 
 		.movie-container > .poster {
@@ -532,7 +535,7 @@
 		}
 
 		dialog {
-			max-width: 32em;
+			max-width: 90vw;
 			border-radius: 0.2em;
 			border: none;
 			padding: 0;
@@ -549,17 +552,19 @@
 		}
 
 		.action-buttons {
-			position: absolute;
-			bottom: -8rem;
-			left: -3rem;
+			display: flex;
+			flex-wrap: wrap;
+			gap: 1.5rem;
+			justify-content: center;
+			align-items: center;
 			width: 100%;
+			margin-top: 1.5rem;
+			padding-bottom: 1rem;
+			box-sizing: border-box;
 		}
 		.complete-button {
-			position: absolute;
-			bottom: 1rem;
-			right: 3rem;
 			background-color: #040f41;
-			padding: 5px;
+			padding: 0.6rem 1.1rem;
 			border-radius: 10px;
 			color: green;
 			font-weight: bold;
@@ -567,12 +572,9 @@
 
 		.remove-button {
 			color: darkred;
-			position: absolute;
-			bottom: 1rem;
 			font-weight: bold;
-			right: 14rem;
 			background-color: #040f41;
-			padding: 5px;
+			padding: 0.6rem 1.1rem;
 			border-radius: 10px;
 		}
 
