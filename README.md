@@ -17,3 +17,5 @@ npm run dev -- --open
 
 Nothing to much to add to this for now but I hope you enjoy the app and design for now it was tiring process to design but lovely to see come together
 
+I aint finished with this as yet ... apparently
+
