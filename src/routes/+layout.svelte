@@ -1,6 +1,7 @@
 <script>
 	// Root layout: global mobile/device baseline applied to every route.
 	import { onNavigate } from '$app/navigation';
+	import Toast from '../components/Toast.svelte';
 
 	// Smooth cross-fade + slide between pages via the View Transitions API.
 	// Works in Chrome (Oppo Find X8 Ultra) and Safari 18+ (iPhone 15 Pro);
@@ -17,6 +18,7 @@
 </script>
 
 <slot />
+<Toast />
 
 <style>
 	/* Dark backdrop everywhere so the Dynamic Island (iPhone 15 Pro) and

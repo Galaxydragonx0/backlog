@@ -5,6 +5,7 @@
   import { showList } from "../ShowStore";
   import { authUser } from "$lib/firebase/auth";
   import { subscribeList, removeItem, completeItem } from "$lib/firebase/db";
+  import { showToast } from "$lib/toast";
   import Icon from "@iconify/svelte";
   import Title from "../../components/Title.svelte";
   import ModalTwo from "../../components/ModalTwo.svelte";
@@ -49,19 +50,32 @@
 
   const modalRemove = (event) => {
     showModal = false;
-    if ($authUser) removeItem($authUser.uid, "shows", event.detail);
+    if ($authUser) {
+      removeItem($authUser.uid, "shows", event.detail);
+      showToast("Title removed");
+    }
   };
 
   const modalComplete = (event) => {
-    if ($authUser) completeItem($authUser.uid, "shows", event.detail);
+    showModal = false;
+    if ($authUser) {
+      completeItem($authUser.uid, "shows", event.detail);
+      showToast("Marked as complete");
+    }
   };
 
   function removeTitle(id) {
-    if ($authUser) removeItem($authUser.uid, "shows", id);
+    if ($authUser) {
+      removeItem($authUser.uid, "shows", id);
+      showToast("Title removed");
+    }
   }
 
   function completedTitle(show) {
-    if ($authUser) completeItem($authUser.uid, "shows", show);
+    if ($authUser) {
+      completeItem($authUser.uid, "shows", show);
+      showToast("Marked as complete");
+    }
   }
 </script>
 

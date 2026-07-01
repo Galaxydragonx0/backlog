@@ -7,7 +7,7 @@
     import PageSearch from "../../../../../components/PageSearch.svelte";
     import { authUser } from "$lib/firebase/auth";
     import { addItem } from "$lib/firebase/db";
-    // import { addToast } from "../../../../../components/Toaster.svelte";
+    import { showToast } from "$lib/toast";
     import { createContextMenu, melt } from '@melt-ui/svelte'
     import SearchShowModal from "../../../../../components/SearchShowModal.svelte";
     import { browser } from "$app/environment";
@@ -41,6 +41,8 @@
         if (!$authUser) return;
         show['title_genre'] = 'show';
         addItem($authUser.uid, 'shows', show);
+        showModal = false;
+        showToast('Title added');
     }
 
 

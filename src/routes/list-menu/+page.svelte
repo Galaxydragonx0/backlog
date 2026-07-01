@@ -1,5 +1,6 @@
 <script>
 	import Header from "../../components/Header.svelte";
+	import Background from "../../components/Background.svelte";
 	// @ts-ignore
 	import { fade } from "svelte/transition";
 	import Icon from "@iconify/svelte";
@@ -16,6 +17,7 @@
 
 <svelte:window bind:innerWidth={width} bind:innerHeight={height} />
 {#if browser}
+	<Background />
 	<Header />
 {/if}
 <nav class="grid" id="menu">
@@ -93,7 +95,8 @@
 		grid-template-rows: repeat(30, 1fr);
 		width: 100%;
 		position: fixed;
-		background-color: #181818;
+		/* transparent so the animated <Background /> canvas shows through */
+		background-color: transparent;
 	}
 
 	a {

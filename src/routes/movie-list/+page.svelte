@@ -5,6 +5,7 @@
   import { movieList } from "../MovieStore";
   import { authUser } from "$lib/firebase/auth";
   import { subscribeList, removeItem, completeItem } from "$lib/firebase/db";
+  import { showToast } from "$lib/toast";
   import Icon from "@iconify/svelte";
   import Title from "../../components/Title.svelte";
   import ModalTwo from "../../components/ModalTwo.svelte";
@@ -50,19 +51,32 @@
 
   const modalRemove = (event) => {
     showModal = false;
-    if ($authUser) removeItem($authUser.uid, "movies", event.detail);
+    if ($authUser) {
+      removeItem($authUser.uid, "movies", event.detail);
+      showToast("Title removed");
+    }
   };
 
   const modalComplete = (event) => {
-    if ($authUser) completeItem($authUser.uid, "movies", event.detail);
+    showModal = false;
+    if ($authUser) {
+      completeItem($authUser.uid, "movies", event.detail);
+      showToast("Marked as complete");
+    }
   };
 
   function removeTitle(id) {
-    if ($authUser) removeItem($authUser.uid, "movies", id);
+    if ($authUser) {
+      removeItem($authUser.uid, "movies", id);
+      showToast("Title removed");
+    }
   }
 
   function completedTitle(movie) {
-    if ($authUser) completeItem($authUser.uid, "movies", movie);
+    if ($authUser) {
+      completeItem($authUser.uid, "movies", movie);
+      showToast("Marked as complete");
+    }
   }
 </script>
 
