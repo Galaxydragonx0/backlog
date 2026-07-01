@@ -73,9 +73,48 @@ export function build(THREE) {
     return new THREE.CanvasTexture(c);
   }
 
+  // Ornate palace-lantern skin: warm glowing panes framed by dark fretwork.
+  // Tiles horizontally around the lantern body; used as both albedo and
+  // emissive map so only the warm panes glow through the lattice.
+  function makeLanternTexture() {
+    const S = 64;
+    const c = document.createElement("canvas");
+    c.width = c.height = S;
+    const g = c.getContext("2d");
+    // warm pane glow (brighter toward the top, like lit paper)
+    const grd = g.createLinearGradient(0, 0, 0, S);
+    grd.addColorStop(0, "#ffdf9e");
+    grd.addColorStop(0.5, "#ffb352");
+    grd.addColorStop(1, "#e06a1e");
+    g.fillStyle = grd;
+    g.fillRect(0, 0, S, S);
+    // dark lattice frame + mullions (edge bars are half-width so tiles join)
+    g.fillStyle = "#20110a";
+    const bar = 5;
+    g.fillRect(0, 0, S, bar);              // top rail
+    g.fillRect(0, S - bar, S, bar);        // bottom rail
+    g.fillRect(0, 0, bar / 2, S);          // left edge (half)
+    g.fillRect(S - bar / 2, 0, bar / 2, S);// right edge (half)
+    g.fillRect(S / 2 - bar / 2, 0, bar, S);// center mullion
+    g.fillRect(0, S / 2 - bar / 2, S, bar);// center transom
+    // fretwork: a small square inside each of the 4 panes
+    g.strokeStyle = "#20110a";
+    g.lineWidth = 2.4;
+    for (const [px, py] of [[S * 0.25, S * 0.25], [S * 0.75, S * 0.25], [S * 0.25, S * 0.75], [S * 0.75, S * 0.75]]) {
+      const q = 8;
+      g.strokeRect(px - q / 2, py - q / 2, q, q);
+    }
+    const tex = new THREE.CanvasTexture(c);
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.repeat.set(4, 1);
+    tex.anisotropy = 4;
+    return tex;
+  }
+
   const leafTex = makeLeafTexture();
   const glowTex = makeGlowTexture();
-  disposables.push(leafTex, glowTex);
+  const lanternTex = makeLanternTexture();
+  disposables.push(leafTex, glowTex, lanternTex);
 
   // ---- Lighting ----------------------------------------------------------
   group.add(new THREE.AmbientLight(0x24402f, 0.7));
@@ -160,11 +199,13 @@ export function build(THREE) {
     return g;
   }
 
-  addCluster(-3.4, 4.4, 1.0, 2.2, 170, 1.0); // near, left top
-  addCluster(-3.2, 2.8, 0.4, 1.7, 120, 0.95); // near lower (by lanterns)
-  addCluster(-0.4, 5.2, -0.8, 2.7, 190, 0.85); // mid top center
-  addCluster(2.6, 4.4, -1.6, 2.5, 170, 0.75); // right
-  addCluster(0.6, 4.2, -4.2, 3.2, 170, 0.5); // far/darker
+  addCluster(-3.4, 4.4, 1.0, 2.4, 360, 1.0); // near, left top
+  addCluster(-3.2, 2.8, 0.4, 1.9, 240, 0.95); // near lower (by lanterns)
+  addCluster(-0.4, 5.4, -0.8, 3.0, 420, 0.85); // mid top center
+  addCluster(2.6, 4.6, -1.6, 2.8, 360, 0.75); // right
+  addCluster(3.6, 3.0, -2.4, 2.2, 260, 0.7); // right lower fill
+  addCluster(0.6, 4.4, -4.2, 3.6, 340, 0.5); // far/darker
+  addCluster(-1.4, 6.2, -2.0, 3.2, 320, 0.62); // top canopy fill
 
   // ---- Lantern model (one reusable design) -------------------------------
   const lanternBodyGeo = new THREE.CylinderGeometry(0.26, 0.26, 0.5, 16);
@@ -174,8 +215,8 @@ export function build(THREE) {
   const tasselGeo = new THREE.CylinderGeometry(0.015, 0.015, 0.42, 6);
   disposables.push(lanternBodyGeo, lanternTopGeo, lanternBotGeo, finialGeo, tasselGeo);
 
-  const bodyBright = std({ color: 0xc0491a, emissive: 0xff6a24, emissiveIntensity: 1.9, roughness: 0.55, flatShading: false });
-  const bodyDim = std({ color: 0x7a2f12, emissive: 0xd0501c, emissiveIntensity: 1.0, roughness: 0.7, flatShading: false });
+  const bodyBright = std({ map: lanternTex, emissiveMap: lanternTex, color: 0xffffff, emissive: 0xff8a3a, emissiveIntensity: 1.9, roughness: 0.55, flatShading: false });
+  const bodyDim = std({ map: lanternTex, emissiveMap: lanternTex, color: 0xd0d0d0, emissive: 0xd0501c, emissiveIntensity: 1.0, roughness: 0.7, flatShading: false });
   const capMat = std({ color: 0x241610 });
   const tasselMat = std({ color: 0x7a1f14 });
   const stringMat = new THREE.LineBasicMaterial({ color: 0x1a1109, transparent: true, opacity: 0.55 });
