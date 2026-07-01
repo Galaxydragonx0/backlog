@@ -97,6 +97,8 @@
 		position: fixed;
 		/* transparent so the animated <Background /> canvas shows through */
 		background-color: transparent;
+		/* above the Background canvas/scrim (both z-index 0) */
+		z-index: 2;
 	}
 
 	a {

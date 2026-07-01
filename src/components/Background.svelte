@@ -125,13 +125,17 @@
 <div class="bg-scrim" aria-hidden="true"></div>
 
 <style>
+  /* NOTE: a negative z-index would sit *behind* the opaque global body
+     background (set in +layout.svelte) and vanish. Keep these at 0 and rely
+     on DOM order — the menu's Header/nav render after <Background /> so they
+     paint on top. */
   .bg-canvas {
     position: fixed;
     inset: 0;
     width: 100vw;
     height: 100dvh;
     display: block;
-    z-index: -2;
+    z-index: 0;
     pointer-events: none;
   }
 
@@ -139,7 +143,7 @@
   .bg-scrim {
     position: fixed;
     inset: 0;
-    z-index: -1;
+    z-index: 0;
     pointer-events: none;
     background: radial-gradient(
       120% 90% at 50% 20%,
