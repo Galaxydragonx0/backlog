@@ -3,6 +3,7 @@
 
 	import Icon from "@iconify/svelte";
 	import { createEventDispatcher } from "svelte";
+	import { animateClose } from "$lib/dialog";
 
 	// @ts-ignore
 	export let showModal; // boolean
@@ -17,8 +18,11 @@
 
 	let dispatch = createEventDispatcher();
 
-	function addTitle(){
-
+	async function addTitle(){
+		// Play the close animation and wait for the dialog to leave the top
+		// layer, then dispatch — so the parent's toast appears after the modal
+		// has fully animated out, not behind it.
+		await animateClose(dialog);
 		dispatch('addTitle', movie);
 	}
 	
@@ -38,7 +42,7 @@
 	class="dialog-pop"
 	bind:this={dialog}
 	on:close={() => (showModal = false)}
-	on:click|self={() => dialog.close()}
+	on:click|self={() => animateClose(dialog)}
 >
 
 	<!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -47,7 +51,7 @@
 		on:click|stopPropagation
 		bind:this={dialog}
 		on:close={() => (showModal = false)}
-		on:click|self={() => dialog.close()}
+		on:click|self={() => animateClose(dialog)}
 	>
 		<img
 			alt="movie poster"
@@ -95,7 +99,7 @@
 
 		</div>
 	</div>
-	<button class="close-button" on:click={() => dialog.close()}><Icon icon="pixelarticons:close" /></button>
+	<button class="close-button" on:click={() => animateClose(dialog)}><Icon icon="pixelarticons:close" /></button>
 </dialog>
 
 <style>
@@ -434,5 +438,23 @@
 			background: #181818;
 			border-radius: 10px;
 		}
+	}
+
+	/* Close animation — plays before the dialog leaves the top layer.
+	   `.closing` is added from JS, so it's wrapped in :global() to stop
+	   Svelte pruning these rules as "unused". */
+	.dialog-pop:global(.closing) {
+		animation: dialog-zoom-out 0.25s ease-in forwards;
+	}
+	.dialog-pop:global(.closing)::backdrop {
+		animation: dialog-fade-out 0.25s ease-out forwards;
+	}
+	@keyframes dialog-zoom-out {
+		from { transform: scale(1); opacity: 1; }
+		to { transform: scale(0.95); opacity: 0; }
+	}
+	@keyframes dialog-fade-out {
+		from { opacity: 1; }
+		to { opacity: 0; }
 	}
 </style>
